@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp } from "@/context/AppContext";
+import { useTranslation } from "react-i18next";
 import { identifyTruck, type RfidScanResult } from "@/services/mockRFID";
 import { captureGrossWeight, captureTareWeight } from "@/services/mockWeighbridge";
 import { verifyProduce, newTxnId, assignLane, buildLanes } from "@/services/mockProcurement";
@@ -33,6 +34,7 @@ type Phase = "idle" | "scanning" | "identified" | "weighing" | "cv" | "confirmed
 
 export default function LiveWeighing() {
   const { addTransaction, updateCentreCapacity, pushToast, pushNotification } = useApp();
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>("idle");
   const [rfidResult, setRfidResult] = useState<RfidScanResult | null>(null);
   const [liveKg, setLiveKg] = useState(0);
@@ -74,15 +76,15 @@ export default function LiveWeighing() {
       setAssignedLane(res.lane?.name ?? null);
       pushToast({
         kind: "success",
-        title: `Truck assigned to ${res.lane?.name ?? "queue"}`,
+        title: t("weighing.toastAssigned", { lane: res.lane?.name ?? "—" }),
         body: `${r.truck!.registrationNumber} · ${r.truck!.farmerName}`,
       });
     } else {
       setPhase("idle");
       pushToast({
         kind: "warning",
-        title: "Unrecognized vehicle",
-        body: "Manual verification required before weighment.",
+        title: t("weighing.toastUnrecognized"),
+        body: t("weighing.manualVerification"),
       });
     }
   };
@@ -98,19 +100,19 @@ export default function LiveWeighing() {
     setCapturedGross(true);
     setBusy(false);
     stabilizing.current = false;
-    pushToast({ kind: "success", title: "Gross weight captured", body: `${formatKg(g)} — stable` });
+    pushToast({ kind: "success", title: t("weighing.toastGrossCaptured"), body: t("weighing.toastStableBody", { kg: formatKg(g) }) });
   };
 
   const doCaptureTare = async () => {
     if (!truck || stabilizing.current) return;
     stabilizing.current = true;
     setBusy(true);
-    const t = await captureTareWeight((kg) => setLiveKg(kg), 7120);
-    setTare(t);
+    const tareValue = await captureTareWeight((kg) => setLiveKg(kg), 7120);
+    setTare(tareValue);
     setCapturedTare(true);
     setBusy(false);
     stabilizing.current = false;
-    pushToast({ kind: "success", title: "Tare weight captured", body: `${formatKg(t)} — stable` });
+    pushToast({ kind: "success", title: t("weighing.toastTareCaptured"), body: t("weighing.toastStableBody", { kg: formatKg(tareValue) }) });
   };
 
   const reweigh = () => {
@@ -134,7 +136,7 @@ export default function LiveWeighing() {
   const confirmTxn = async () => {
     if (!truck || gross === null || tare === null || !cv || !cvReviewed) return;
     setBusy(true);
-    const t: Transaction = {
+    const newTxn: Transaction = {
       transactionId: newTxnId(),
       farmerId: truck.farmerId,
       farmerName: truck.farmerName,
@@ -156,7 +158,7 @@ export default function LiveWeighing() {
         result: cv.result,
       },
       status: cv.result === "verified" ? "completed" : "manual-review",
-      timestamp: `Today, ${new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`,
+      timestamp: t("weighing.todayPrefix", { time: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) }),
       integrity: {
         farmerVerified: true,
         rfidMatched: true,
@@ -167,23 +169,23 @@ export default function LiveWeighing() {
       },
     };
     await new Promise((r) => setTimeout(r, 700));
-    setTxn(t);
-    addTransaction(t);
+    setTxn(newTxn);
+    addTransaction(newTxn);
     updateCentreCapacity("CRC-NAG-01", -(gross - tare));
     setPhase("confirmed");
     setBusy(false);
     pushToast({
       kind: cv.result === "verified" ? "success" : "warning",
-      title: "Transaction recorded",
-      body: `${t.transactionId} · ${formatKg(t.netWeightKg)} ${t.crop}`,
+      title: t("weighing.toastTxnTitle"),
+      body: `${newTxn.transactionId} · ${formatKg(newTxn.netWeightKg)} ${newTxn.crop}`,
     });
     pushNotification({
       type: cv.result === "verified" ? "procurement-update" : "verification-warning",
-      title: cv.result === "verified" ? "Weighment completed" : "CV mismatch flagged",
+      title: cv.result === "verified" ? t("weighing.notifCompletedTitle") : t("weighing.notifMismatchTitle"),
       body:
         cv.result === "verified"
-          ? `${t.transactionId}: ${formatKg(t.netWeightKg)} of ${t.crop} for ${t.farmerName}.`
-          : `${t.transactionId}: expected ${cv.expected}, detected ${cv.detected} (${cv.confidence}%). Manual review required.`,
+          ? t("weighing.notifCompletedBody", { id: newTxn.transactionId, kg: formatKg(newTxn.netWeightKg), crop: newTxn.crop, name: newTxn.farmerName })
+          : t("weighing.notifMismatchBody", { id: newTxn.transactionId, expected: cv.expected, detected: cv.detected, confidence: cv.confidence }),
       actor: "centre",
     });
   };
@@ -193,19 +195,19 @@ export default function LiveWeighing() {
   return (
     <div>
       <PageHeader
-        title="Live Weighing"
-        description="RFID identification → lane assignment → digital weighment → CV verification → transaction."
-        breadcrumb={[{ label: "Centre", to: "/centre" }, { label: "Live Weighing" }]}
+        title={t("weighing.title")}
+        description={t("weighing.description")}
+        breadcrumb={[{ label: t("weighing.breadcrumbCentre"), to: "/centre" }, { label: t("weighing.title") }]}
         actions={<SecuredBadge />}
       />
 
       {/* Phase indicator */}
-      <ol className="mb-6 grid grid-cols-5 gap-1.5" aria-label="Weighing workflow">
+      <ol className="mb-6 grid grid-cols-5 gap-1.5" aria-label={t("weighing.workflowAria")}>
         {[
-          { key: "identified", label: "RFID", icon: Radio },
-          { key: "weighing", label: "Weigh", icon: Scale },
-          { key: "cv", label: "CV Check", icon: ScanBarcode },
-          { key: "confirmed", label: "Confirm", icon: CheckCircle2 },
+          { key: "identified", label: t("weighing.stepRfid"), icon: Radio },
+          { key: "weighing", label: t("weighing.stepWeigh"), icon: Scale },
+          { key: "cv", label: t("weighing.stepCv"), icon: ScanBarcode },
+          { key: "confirmed", label: t("weighing.stepConfirm"), icon: CheckCircle2 },
         ].map((s) => (
           <li key={s.label} className="flex items-center gap-1.5">
             <span
@@ -229,15 +231,15 @@ export default function LiveWeighing() {
           <Card className="overflow-hidden">
             <div className="flex items-center justify-between border-b border-ink-100 p-4">
               <h2 className="flex items-center gap-2 font-bold text-ink-900">
-                <Radio className="h-5 w-5 text-primary-700" aria-hidden /> RFID Gate — Entry
+                <Radio className="h-5 w-5 text-primary-700" aria-hidden /> {t("weighing.rfidGate")}
               </h2>
               {phase !== "scanning" && (
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => startScan(false)} icon={<RotateCcw className="h-4 w-4" />}>
-                    Simulate truck
+                    {t("weighing.simulateTruck")}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => startScan(true)}>
-                    Unknown RFID
+                    {t("weighing.unknownRfid")}
                   </Button>
                 </div>
               )}
@@ -256,7 +258,7 @@ export default function LiveWeighing() {
                   />
                   <div className="relative z-10 text-center">
                     <Radio className="mx-auto h-8 w-8 animate-pulse text-primary-300" aria-hidden />
-                    <p className="mt-2 text-sm font-bold tracking-widest text-primary-100">SCANNING RFID…</p>
+                    <p className="mt-2 text-sm font-bold tracking-widest text-primary-100">{t("weighing.scanning")}</p>
                   </div>
                 </div>
               )}
@@ -264,16 +266,16 @@ export default function LiveWeighing() {
               {phase !== "scanning" && !rfidResult && (
                 <div className="flex h-44 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-ink-200 bg-earth-50 text-center">
                   <Truck className="h-9 w-9 text-ink-300" aria-hidden />
-                  <p className="mt-2 text-sm font-semibold text-ink-500">No truck at gate</p>
-                  <p className="text-xs text-ink-400">Press “Simulate truck” to start the arrival flow</p>
+                  <p className="mt-2 text-sm font-semibold text-ink-500">{t("weighing.noTruck")}</p>
+                  <p className="text-xs text-ink-400">{t("weighing.noTruckHint")}</p>
                 </div>
               )}
 
               {rfidResult && rfidResult.state === "unknown" && (
                 <div className="flex h-44 flex-col items-center justify-center rounded-2xl border border-alert-100 bg-alert-50 text-center animate-fade-up">
                   <XCircle className="h-9 w-9 text-alert-600" aria-hidden />
-                  <p className="mt-2 text-sm font-bold text-alert-700">⚠ Unrecognized Vehicle</p>
-                  <p className="text-xs text-ink-500">Manual verification required before weighment.</p>
+                  <p className="mt-2 text-sm font-bold text-alert-700">{t("weighing.unrecognized")}</p>
+                  <p className="text-xs text-ink-500">{t("weighing.manualVerification")}</p>
                 </div>
               )}
 
@@ -281,20 +283,20 @@ export default function LiveWeighing() {
                 <div className="animate-fade-up rounded-2xl border border-primary-200 bg-primary-50/60 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="flex items-center gap-2 text-sm font-extrabold tracking-wide text-primary-900">
-                      <CheckCircle2 className="h-5 w-5 text-primary-600" aria-hidden /> RFID DETECTED — {truck.rfid}
+                      <CheckCircle2 className="h-5 w-5 text-primary-600" aria-hidden /> {t("weighing.detected", { rfid: truck.rfid })}
                     </p>
-                    <StatusBadge tone="green" label="Identified" />
+                    <StatusBadge tone="green" label={t("weighing.identified")} />
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                    <div><p className="text-[11px] font-bold uppercase text-ink-400">Truck</p><p className="font-mono font-bold text-ink-900">{truck.registrationNumber}</p></div>
-                    <div><p className="text-[11px] font-bold uppercase text-ink-400">Farmer</p><p className="font-bold text-ink-900">{truck.farmerName}</p></div>
-                    <div><p className="text-[11px] font-bold uppercase text-ink-400">Produce</p><p className="font-bold text-ink-900">{truck.crop}</p></div>
-                    <div><p className="text-[11px] font-bold uppercase text-ink-400">Lane</p><p className="font-bold text-primary-800">{assignedLane ?? "—"}</p></div>
+                    <div><p className="text-[11px] font-bold uppercase text-ink-400">{t("weighing.fieldTruck")}</p><p className="font-mono font-bold text-ink-900">{truck.registrationNumber}</p></div>
+                    <div><p className="text-[11px] font-bold uppercase text-ink-400">{t("weighing.fieldFarmer")}</p><p className="font-bold text-ink-900">{truck.farmerName}</p></div>
+                    <div><p className="text-[11px] font-bold uppercase text-ink-400">{t("weighing.fieldProduce")}</p><p className="font-bold text-ink-900">{truck.crop}</p></div>
+                    <div><p className="text-[11px] font-bold uppercase text-ink-400">{t("weighing.fieldLane")}</p><p className="font-bold text-primary-800">{assignedLane ?? "—"}</p></div>
                   </div>
                   <ul className="mt-3 flex flex-wrap gap-2">
                     {rfidResult.checks?.map((c) => (
-                      <li key={c.label}>
-                        <StatusBadge tone={c.ok ? "green" : "amber"} label={`${c.ok ? "✓" : "…"} ${c.label}`} />
+                      <li key={c.labelKey}>
+                        <StatusBadge tone={c.ok ? "green" : "amber"} label={`${c.ok ? "✓" : "…"} ${t(c.labelKey)}`} />
                       </li>
                     ))}
                   </ul>
@@ -307,17 +309,17 @@ export default function LiveWeighing() {
           <Card className="overflow-hidden">
             <div className="flex items-center justify-between border-b border-ink-100 p-4">
               <h2 className="flex items-center gap-2 font-bold text-ink-900">
-                <Scale className="h-5 w-5 text-primary-700" aria-hidden /> Weighbridge WB-03
+                <Scale className="h-5 w-5 text-primary-700" aria-hidden /> {t("weighing.weighbridge")}
               </h2>
               <StatusBadge
                 tone={busy ? "amber" : capturedGross || capturedTare ? "green" : "gray"}
-                label={busy ? "MEASURING…" : capturedGross || capturedTare ? "STABLE" : "IDLE"}
+                label={busy ? t("weighing.statusMeasuring") : capturedGross || capturedTare ? t("weighing.statusStable") : t("weighing.statusIdle")}
               />
             </div>
             <div className="p-5">
               {/* Digital weight display */}
               <div className="rounded-2xl bg-primary-950 p-6 text-center">
-                <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary-300">Current Weight</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary-300">{t("weighing.currentWeight")}</p>
                 <AnimatePresence mode="popLayout">
                   <motion.p
                     key={liveKg}
@@ -326,36 +328,36 @@ export default function LiveWeighing() {
                     className="font-display text-5xl font-extrabold tracking-tight text-white md:text-6xl"
                   >
                     {liveKg.toLocaleString("en-IN")}
-                    <span className="ml-2 text-xl font-bold text-primary-300">kg</span>
+                    <span className="ml-2 text-xl font-bold text-primary-300">{t("weighing.unitKg")}</span>
                   </motion.p>
                 </AnimatePresence>
                 <p className="mt-1 text-xs font-semibold text-primary-200">
-                  {busy ? "Stabilising…" : capturedGross || capturedTare ? "● Stable reading" : "Awaiting truck"}
+                  {busy ? t("weighing.stabilising") : capturedGross || capturedTare ? t("weighing.stableReading") : t("weighing.awaitingTruck")}
                 </p>
               </div>
 
               {/* Weight controls */}
               <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <Button variant="primary" disabled={!truck || phase === "scanning"} loading={busy && !capturedGross} onClick={doCaptureGross} icon={<Weight className="h-4 w-4" />}>
-                  Capture Gross
+                  {t("weighing.captureGross")}
                 </Button>
                 <Button variant="secondary" disabled={!capturedGross || capturedTare} loading={busy && capturedGross && !capturedTare} onClick={doCaptureTare}>
-                  Capture Tare
+                  {t("weighing.captureTare")}
                 </Button>
                 <Button variant="outline" disabled={!capturedGross && !capturedTare} onClick={reweigh} icon={<RefreshCw className="h-4 w-4" />}>
-                  Reweigh
+                  {t("weighing.reweigh")}
                 </Button>
                 <Button variant="amber" disabled={!truck || !capturedGross || busy} onClick={doCv} icon={<ScanBarcode className="h-4 w-4" />}>
-                  Verify Produce
+                  {t("weighing.verifyProduce")}
                 </Button>
               </div>
 
               {/* Gross/tare/net summary */}
               <dl className="mt-4 grid grid-cols-3 gap-3 text-center">
                 {[
-                  { k: "Gross", v: gross, tone: "text-ink-900" },
-                  { k: "Tare", v: tare, tone: "text-ink-900" },
-                  { k: "Net", v: net, tone: "text-primary-700" },
+                  { k: t("weighing.gross"), v: gross, tone: "text-ink-900" },
+                  { k: t("weighing.tare"), v: tare, tone: "text-ink-900" },
+                  { k: t("weighing.net"), v: net, tone: "text-primary-700" },
                 ].map((x) => (
                   <div key={x.k} className="rounded-xl bg-earth-50 px-3 py-3">
                     <p className="text-[11px] font-bold uppercase tracking-wide text-ink-400">{x.k}</p>
@@ -375,23 +377,23 @@ export default function LiveWeighing() {
           <Card className="overflow-hidden">
             <div className="flex items-center justify-between border-b border-ink-100 p-4">
               <h2 className="flex items-center gap-2 font-bold text-ink-900">
-                <Camera className="h-5 w-5 text-primary-700" aria-hidden /> CV Produce Verification
+                <Camera className="h-5 w-5 text-primary-700" aria-hidden /> {t("weighing.cvTitle")}
               </h2>
               {cv && (
-                <StatusBadge tone={cv.result === "verified" ? "green" : "amber"} label={cv.result === "verified" ? "Verified" : "Mismatch"} />
+                <StatusBadge tone={cv.result === "verified" ? "green" : "amber"} label={cv.result === "verified" ? t("weighing.cvVerified") : t("weighing.cvMismatch")} />
               )}
             </div>
             <div className="p-5">
               {!truck && (
                 <p className="rounded-xl bg-earth-50 px-4 py-6 text-center text-sm text-ink-400">
-                  Identify a truck first — the camera is linked to the active lane.
+                  {t("weighing.cvNeedTruck")}
                 </p>
               )}
               {truck && !cv && (
                 <div className="text-center">
-                  <p className="text-sm text-ink-500">Expected produce: <strong className="text-ink-900">{truck.crop}</strong></p>
+                  <p className="text-sm text-ink-500">{t("weighing.cvExpectedLabel")} <strong className="text-ink-900">{truck.crop}</strong></p>
                   <p className="mt-2 rounded-xl bg-earth-50 px-4 py-6 text-sm text-ink-400">
-                    Run “Verify Produce” after capturing weights. The CV engine samples the load through the lane camera.
+                    {t("weighing.cvHint")}
                   </p>
                 </div>
               )}
@@ -401,20 +403,20 @@ export default function LiveWeighing() {
                     {cv.result === "verified" ? (
                       <>
                         <p className="flex items-center gap-2 font-bold text-primary-800">
-                          <CheckCircle2 className="h-5 w-5" aria-hidden /> Material Verified
+                          <CheckCircle2 className="h-5 w-5" aria-hidden /> {t("weighing.cvMaterialVerified")}
                         </p>
                         <p className="mt-1 text-sm text-ink-700">
-                          {cv.detected} — <strong>{cv.confidence}% confidence</strong>
+                          {cv.detected} — <strong>{cv.confidence}% {t("weighing.confidenceWord")}</strong>
                         </p>
                       </>
                     ) : (
                       <>
                         <p className="flex items-center gap-2 font-bold text-saffron-600">
-                          <AlertTriangle className="h-5 w-5" aria-hidden /> Material mismatch detected
+                          <AlertTriangle className="h-5 w-5" aria-hidden /> {t("weighing.cvMismatchDetected")}
                         </p>
                         <p className="mt-1 text-sm text-ink-700">
-                          Expected: <strong>{cv.expected}</strong> · Detected: <strong>{cv.detected}</strong>
-                          <br />Confidence: {cv.confidence}%
+                          {t("weighing.cvExpectedWord")}: <strong>{cv.expected}</strong> · {t("weighing.cvDetectedWord")}: <strong>{cv.detected}</strong>
+                          <br />{t("weighing.cvConfidenceWord")}: {cv.confidence}%
                         </p>
                       </>
                     )}
@@ -429,30 +431,30 @@ export default function LiveWeighing() {
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Button size="sm" variant={cv.result === "verified" ? "primary" : "outline"} onClick={() => setCvReviewed(true)} disabled={cvReviewed} icon={<CheckCircle2 className="h-4 w-4" />}>
-                      Accept
+                      {t("weighing.cvAccept")}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setCv(null)}>
-                      Re-scan
+                      {t("weighing.cvRescan")}
                     </Button>
-                    <Button size="sm" variant="ghost" icon={<Camera className="h-4 w-4" />} onClick={() => pushToast({ kind: "info", title: "Evidence captured", body: "Frame stored against the transaction audit trail (simulated)." })}>
-                      Capture Evidence
+                    <Button size="sm" variant="ghost" icon={<Camera className="h-4 w-4" />} onClick={() => pushToast({ kind: "info", title: t("weighing.toastEvidenceTitle"), body: t("weighing.toastEvidenceBody") })}>
+                      {t("weighing.cvEvidence")}
                     </Button>
                     {cv.result !== "verified" && (
-                      <Button size="sm" variant="danger" onClick={() => pushToast({ kind: "warning", title: "Sent to manual review", body: "Proceed at the supervisor console." })}>
-                        Reject
+                      <Button size="sm" variant="danger" onClick={() => pushToast({ kind: "warning", title: t("weighing.toastManualTitle"), body: t("weighing.toastManualBody") })}>
+                        {t("weighing.cvReject")}
                       </Button>
                     )}
                   </div>
                   {!cvReviewed && (
                     <p className="mt-2 text-xs font-semibold text-ink-400">
                       {cv.result === "verified"
-                        ? "Accept the result to enable transaction confirmation."
-                        : "Review is mandatory before a mismatched load can be accepted."}
+                        ? t("weighing.cvAcceptHint")
+                        : t("weighing.cvReviewHint")}
                     </p>
                   )}
                   {cvReviewed && (
                     <p className="mt-2 flex items-center gap-1.5 text-xs font-bold text-primary-700">
-                      <ShieldCheck className="h-4 w-4" aria-hidden /> Verification reviewed & accepted
+                      <ShieldCheck className="h-4 w-4" aria-hidden /> {t("weighing.cvReviewed")}
                     </p>
                   )}
                 </div>
@@ -464,9 +466,9 @@ export default function LiveWeighing() {
           <Card className="overflow-hidden">
             <div className="border-b border-ink-100 p-4">
               <h2 className="flex items-center gap-2 font-bold text-ink-900">
-                <Fingerprint className="h-5 w-5 text-primary-700" aria-hidden /> Transaction Identity
+                <Fingerprint className="h-5 w-5 text-primary-700" aria-hidden /> {t("weighing.txnTitle")}
               </h2>
-              <p className="text-xs text-ink-400">Farmer → Truck RFID → Weighbridge → CV → Record</p>
+              <p className="text-xs text-ink-400">{t("weighing.txnChain")}</p>
             </div>
             <div className="p-5">
               {txn ? (
@@ -476,11 +478,11 @@ export default function LiveWeighing() {
                   </p>
                   <ul className="mt-4 space-y-0">
                     {[
-                      { icon: User, label: `Farmer ${txn.farmerId} — ${txn.farmerName}`, done: true },
-                      { icon: Truck, label: `Truck ${txn.registrationNumber} · RFID ${txn.rfid}`, done: true },
-                      { icon: Scale, label: `Gross ${formatKg(txn.grossWeightKg)} · Tare ${formatKg(txn.tareWeightKg)}`, done: true },
-                      { icon: ScanBarcode, label: `CV: ${txn.cvVerification.detected} (${txn.cvVerification.confidence}%)`, done: txn.cvVerification.result === "verified" },
-                      { icon: CheckCircle2, label: `Net ${formatKg(txn.netWeightKg)} → ₹${txn.amount.toLocaleString("en-IN")}`, done: true },
+                      { icon: User, label: t("weighing.txnStepFarmer", { id: txn.farmerId, name: txn.farmerName }), done: true },
+                      { icon: Truck, label: t("weighing.txnStepTruck", { reg: txn.registrationNumber, rfid: txn.rfid }), done: true },
+                      { icon: Scale, label: t("weighing.txnStepWeights", { gross: formatKg(txn.grossWeightKg), tare: formatKg(txn.tareWeightKg) }), done: true },
+                      { icon: ScanBarcode, label: t("weighing.txnStepCv", { detected: txn.cvVerification.detected, confidence: txn.cvVerification.confidence }), done: txn.cvVerification.result === "verified" },
+                      { icon: CheckCircle2, label: t("weighing.txnStepNet", { net: formatKg(txn.netWeightKg), amount: txn.amount.toLocaleString("en-IN") }), done: true },
                     ].map((step, i, arr) => (
                       <li key={step.label} className="relative flex gap-3 pb-4 last:pb-0">
                         {i < arr.length - 1 && <span className="absolute left-[13px] top-7 h-[calc(100%-1rem)] w-0.5 bg-primary-200" aria-hidden />}
@@ -493,13 +495,13 @@ export default function LiveWeighing() {
                   </ul>
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <SecuredBadge />
-                    <StatusBadge tone="blue" label={`Lane ${assignedLane ?? "—"} · WB-03`} />
-                    <StatusBadge tone="green" label="Capacity updated" />
+                    <StatusBadge tone="blue" label={t("weighing.txnLaneBadge", { lane: assignedLane ?? "—" })} />
+                    <StatusBadge tone="green" label={t("weighing.txnCapacityUpdated")} />
                   </div>
                 </div>
               ) : (
                 <p className="rounded-xl bg-earth-50 px-4 py-6 text-center text-sm text-ink-400">
-                  The unified transaction (farmer + truck + weight + CV) appears here once weighing completes.
+                  {t("weighing.txnEmpty")}
                 </p>
               )}
             </div>
@@ -509,9 +511,9 @@ export default function LiveWeighing() {
           <Card className="border-primary-200 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="font-bold text-ink-900">Confirm Transaction</h3>
+                <h3 className="font-bold text-ink-900">{t("weighing.confirmTitle")}</h3>
                 <p className="text-xs text-ink-500">
-                  {canConfirm ? "All checks complete — ready to record." : "Complete weighing, CV verification and review to enable."}
+                  {canConfirm ? t("weighing.confirmReady") : t("weighing.confirmPending")}
                 </p>
               </div>
               <Button
@@ -521,14 +523,14 @@ export default function LiveWeighing() {
                 onClick={confirmTxn}
                 iconRight={<ArrowRight className="h-5 w-5" />}
               >
-                Confirm Transaction
+                {t("weighing.confirmBtn")}
               </Button>
             </div>
             {!canConfirm && (
               <ul className="mt-3 grid gap-1 text-xs font-semibold text-ink-400 sm:grid-cols-3">
-                <li>{gross !== null ? "✓" : "①"} Gross captured</li>
-                <li>{tare !== null ? "✓" : "②"} Tare captured</li>
-                <li>{cv && cvReviewed ? "✓" : "③"} CV reviewed</li>
+                <li>{gross !== null ? "✓" : "①"} {t("weighing.reqGross")}</li>
+                <li>{tare !== null ? "✓" : "②"} {t("weighing.reqTare")}</li>
+                <li>{cv && cvReviewed ? "✓" : "③"} {t("weighing.reqCv")}</li>
               </ul>
             )}
           </Card>

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Sprout,
   Phone,
@@ -14,8 +15,10 @@ import { useAuth } from "@/context/AuthContext";
 import { demoUsers } from "@/services/mockAuth";
 import { Button } from "@/components/common/Button";
 import { StatusBadge } from "@/components/common/Badges";
+import { LanguageSelector } from "@/components/layout/LanguageSelector";
 
 export default function Login() {
+  const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,7 +35,7 @@ export default function Login() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (clean.length !== 10) {
-      setError("Enter a valid 10-digit Indian mobile number.");
+      setError(t("auth.invalidMobile"));
       return;
     }
     setError(null);
@@ -52,6 +55,12 @@ export default function Login() {
     <div className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
       {/* Brand panel */}
       <div className="relative hidden overflow-hidden bg-primary-900 text-white lg:block">
+        {/* Language selector floats top-right over the brand visual */}
+        <div className="absolute right-4 top-4 z-10">
+          <div className="rounded-xl bg-white/10 backdrop-blur">
+            <LanguageSelector compact />
+          </div>
+        </div>
         <img
           src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=1200&q=80"
           alt=""
@@ -68,30 +77,32 @@ export default function Login() {
           </Link>
           <div>
             <h1 className="font-display text-4xl font-extrabold leading-tight">
-              Kisan Se Kendra Tak,
+              {t("auth.brandPitch1")}
               <br />
-              Har Kadam <span className="text-saffron-300">Aasaan.</span>
+              {t("auth.brandPitch2")} <span className="text-saffron-300">{t("auth.brandPitch3")}</span>
             </h1>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-primary-100">
-              Your digital bridge to smarter agricultural procurement. One OTP signs in farmers,
-              truck drivers, procurement officers, centre managers and administrators — each into
-              their own role-specific workspace.
+              {t("auth.brandBlurb")}
             </p>
             <ul className="mt-6 space-y-2 text-sm text-primary-100">
-              {["Mobile OTP verification", "Role-based access (RBAC)", "Session persists across refresh"].map((t) => (
-                <li key={t} className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-saffron-300" aria-hidden /> {t}
+              {[t("auth.bulletOtp"), t("auth.bulletRbac"), t("auth.bulletSession")].map((txt) => (
+                <li key={txt} className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-saffron-300" aria-hidden /> {txt}
                 </li>
               ))}
             </ul>
           </div>
-          <p className="text-xs text-primary-200/70">Prototype authentication — no real SMS is sent.</p>
+          <p className="text-xs text-primary-200/70">{t("auth.noSms")}</p>
         </div>
       </div>
 
       {/* Form panel */}
       <div className="flex flex-col justify-center bg-earth-50 px-6 py-10 sm:px-12">
         <div className="mx-auto w-full max-w-md">
+          {/* Language selector stays reachable on mobile auth screens too */}
+          <div className="mb-2 flex justify-end lg:hidden">
+            <LanguageSelector compact />
+          </div>
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-700 text-white">
               <Sprout className="h-5 w-5" aria-hidden />
@@ -99,12 +110,12 @@ export default function Login() {
             <span className="font-display text-xl font-extrabold text-ink-900">KrushiSetu</span>
           </div>
 
-          <h1 className="font-display text-2xl font-extrabold text-ink-900">Welcome to KrushiSetu</h1>
-          <p className="mt-1 text-sm text-ink-500">Your digital bridge to smarter agricultural procurement.</p>
+          <h1 className="font-display text-2xl font-extrabold text-ink-900">{t("auth.welcome")}</h1>
+          <p className="mt-1 text-sm text-ink-500">{t("auth.subtitle")}</p>
 
           <form onSubmit={submit} className="mt-7 space-y-4">
             <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-ink-400">Mobile number</span>
+              <span className="text-xs font-bold uppercase tracking-wide text-ink-400">{t("auth.mobileLabel")}</span>
               <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-3.5 transition focus-within:border-primary-500 focus-within:ring-4 focus-within:ring-primary-100">
                 <Phone className="h-4.5 w-4.5 text-ink-400" aria-hidden />
                 <span className="text-sm font-bold text-ink-500">+91</span>
@@ -135,7 +146,7 @@ export default function Login() {
                   exit={{ opacity: 0, y: -6 }}
                   className="rounded-2xl border border-ink-100 bg-white p-4"
                 >
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-ink-400">Account lookup</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-ink-400">{t("auth.lookupLabel")}</p>
                   {detected ? (
                     <div className="mt-2">
                       <p className="text-sm font-bold text-ink-900">{detected.name}</p>
@@ -153,7 +164,7 @@ export default function Login() {
                     <div className="mt-2 flex items-start gap-2">
                       <UserX className="mt-0.5 h-4.5 w-4.5 shrink-0 text-saffron-500" aria-hidden />
                       <p className="text-xs leading-relaxed text-ink-500">
-                        Not registered — you'll continue as <strong>citizen (view-only)</strong> access.
+                        {t("auth.notRegistered")}
                       </p>
                     </div>
                   )}
@@ -170,13 +181,13 @@ export default function Login() {
             )}
 
             <Button type="submit" size="lg" className="w-full" loading={sending} iconRight={<ArrowRight className="h-5 w-5" />}>
-              Continue
+              {t("auth.continue")}
             </Button>
           </form>
 
           {/* Demo accounts */}
           <div className="mt-7 rounded-2xl border border-dashed border-primary-200 bg-primary-50/60 p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-primary-700">Demo accounts — SIH26032</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-primary-700">{t("auth.demoHeading")}</p>
             <div className="mt-2.5 grid gap-1.5">
               {demoUsers.map((usr) => (
                 <button
@@ -198,14 +209,13 @@ export default function Login() {
               ))}
             </div>
             <p className="mt-2.5 text-[11px] leading-relaxed text-ink-500">
-              Tap to fill the number — a fresh demo OTP is generated every time and shown on the
-              verification screen (simulates the SMS).
+              {t("auth.demoHint")}
             </p>
           </div>
 
           <p className="mt-6 text-center text-xs text-ink-400">
             <Link to="/" className="inline-flex items-center gap-1 font-semibold text-primary-700 hover:text-primary-800">
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Back to home
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> {t("auth.backHome")}
             </Link>
           </p>
         </div>

@@ -1,29 +1,31 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Sprout, Wheat, Warehouse, Scale, IndianRupee, Radar } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { homeRouteFor } from "@/services/mockAuth";
 
 const pipeline = [
-  { icon: Wheat, label: "Farmer" },
-  { icon: Sprout, label: "Crop" },
-  { icon: Warehouse, label: "Centre" },
-  { icon: Scale, label: "Weigh" },
-  { icon: IndianRupee, label: "Procure" },
-  { icon: Radar, label: "Track" },
+  { icon: Wheat, key: "pipelineFarmer" },
+  { icon: Sprout, key: "pipelineCrop" },
+  { icon: Warehouse, key: "pipelineCentre" },
+  { icon: Scale, key: "pipelineWeigh" },
+  { icon: IndianRupee, key: "pipelineProcure" },
+  { icon: Radar, key: "pipelineTrack" },
 ];
 
 const messages = [
-  "Preparing your KrushiSetu experience…",
-  "Checking secure session…",
-  "Loading procurement centres…",
-  "Syncing live availability…",
-  "Ready to connect…",
+  "splash.msg1",
+  "splash.msg2",
+  "splash.msg3",
+  "splash.msg4",
+  "splash.msg5",
 ];
 
 export default function Splash() {
   const { status, user } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [msgIdx, setMsgIdx] = useState(0);
 
@@ -70,14 +72,14 @@ export default function Splash() {
         KrushiSetu
       </motion.h1>
       <p className="mt-1.5 text-sm font-medium text-primary-200">
-        Kisan Se Kendra Tak, Har Kadam Aasaan.
+        {t("splash.tagline")}
       </p>
 
       {/* pipeline */}
       <div className="mt-10 flex items-center gap-1.5 sm:gap-2.5" aria-hidden>
         {pipeline.map((p, i) => (
           <motion.div
-            key={p.label}
+            key={p.key}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 + i * 0.12 }}
@@ -88,7 +90,7 @@ export default function Splash() {
                 <p.icon className="h-4.5 w-4.5 text-saffron-300" />
               </span>
               <span className="hidden text-[9px] font-bold uppercase tracking-wider text-primary-200 sm:block">
-                {p.label}
+                {t(`splash.${p.key}`)}
               </span>
             </span>
             {i < pipeline.length - 1 && (
@@ -105,7 +107,7 @@ export default function Splash() {
 
       <div className="mt-10 h-5" aria-live="polite">
         <motion.p key={msgIdx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-semibold tracking-wide text-primary-100/90">
-          {messages[msgIdx]}
+          {t(messages[msgIdx])}
         </motion.p>
       </div>
 
@@ -119,7 +121,7 @@ export default function Splash() {
       </div>
 
       <p className="absolute bottom-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary-300/70">
-        Prototype Demo
+        {t("splash.prototypeDemo")}
       </p>
     </div>
   );

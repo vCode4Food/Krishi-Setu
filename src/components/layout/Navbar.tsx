@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Sprout,
   Bell,
@@ -15,63 +16,64 @@ import { cn } from "@/utils/format";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { NotificationPanel } from "./NotificationPanel";
+import { LanguageSelector } from "./LanguageSelector";
 import type { Role } from "@/services/mockAuth";
 
-const NAV: Record<string, { to: string; label: string }[]> = {
+const NAV: Record<string, { to: string; key: string }[]> = {
   farmer: [
-    { to: "/farmer", label: "Dashboard" },
-    { to: "/farmer/crop-health", label: "Crop Health" },
-    { to: "/farmer/centres", label: "Centres" },
-    { to: "/farmer/book-slot", label: "Book Slot" },
-    { to: "/farmer/schemes", label: "Schemes" },
-    { to: "/farmer/news", label: "News" },
-    { to: "/farmer/experts", label: "Experts" },
+    { to: "/farmer", key: "dashboard" },
+    { to: "/farmer/crop-health", key: "cropHealth" },
+    { to: "/farmer/centres", key: "centres" },
+    { to: "/farmer/book-slot", key: "bookSlot" },
+    { to: "/farmer/schemes", key: "schemes" },
+    { to: "/farmer/news", key: "news" },
+    { to: "/farmer/experts", key: "experts" },
   ],
   truck_driver: [
-    { to: "/driver", label: "Dashboard" },
-    { to: "/driver/trips", label: "My Trips" },
-    { to: "/driver/navigation", label: "Navigation" },
-    { to: "/driver/rfid", label: "RFID" },
-    { to: "/driver/history", label: "History" },
+    { to: "/driver", key: "dashboard" },
+    { to: "/driver/trips", key: "myTrips" },
+    { to: "/driver/navigation", key: "navigation" },
+    { to: "/driver/rfid", key: "rfid" },
+    { to: "/driver/history", key: "history" },
   ],
   procurement_officer: [
-    { to: "/officer", label: "Dashboard" },
-    { to: "/officer/weighing", label: "Live Weighing" },
-    { to: "/officer/queue", label: "Queue" },
-    { to: "/officer/trucks", label: "Trucks" },
-    { to: "/officer/verification", label: "Verification" },
-    { to: "/officer/transactions", label: "Transactions" },
+    { to: "/officer", key: "dashboard" },
+    { to: "/officer/weighing", key: "liveWeighing" },
+    { to: "/officer/queue", key: "queue" },
+    { to: "/officer/trucks", key: "trucks" },
+    { to: "/officer/verification", key: "verification" },
+    { to: "/officer/transactions", key: "transactions" },
   ],
   centre_manager: [
-    { to: "/centre-manager", label: "Dashboard" },
-    { to: "/centre-manager/capacity", label: "Capacity" },
-    { to: "/centre-manager/lanes", label: "Lanes" },
-    { to: "/centre-manager/slots", label: "Slots" },
-    { to: "/centre-manager/analytics", label: "Analytics" },
-    { to: "/centre-manager/audit", label: "Audit" },
+    { to: "/centre-manager", key: "dashboard" },
+    { to: "/centre-manager/capacity", key: "capacity" },
+    { to: "/centre-manager/lanes", key: "lanes" },
+    { to: "/centre-manager/slots", key: "slots" },
+    { to: "/centre-manager/analytics", key: "analytics" },
+    { to: "/centre-manager/audit", key: "audit" },
   ],
   district_admin: [
-    { to: "/admin/district", label: "Dashboard" },
-    { to: "/admin/district/centres", label: "Centres" },
-    { to: "/admin/district/procurement", label: "Procurement" },
-    { to: "/admin/district/analytics", label: "Analytics" },
-    { to: "/admin/district/alerts", label: "Alerts" },
+    { to: "/admin/district", key: "dashboard" },
+    { to: "/admin/district/centres", key: "centres" },
+    { to: "/admin/district/procurement", key: "procurement" },
+    { to: "/admin/district/analytics", key: "analytics" },
+    { to: "/admin/district/alerts", key: "alerts" },
   ],
   state_admin: [
-    { to: "/admin/state", label: "State Overview" },
-    { to: "/admin/state/districts", label: "Districts" },
-    { to: "/admin/state/centres", label: "Centres" },
-    { to: "/admin/state/fraud", label: "Fraud Alerts" },
-    { to: "/admin/state/analytics", label: "Analytics" },
+    { to: "/admin/state", key: "stateOverview" },
+    { to: "/admin/state/districts", key: "districts" },
+    { to: "/admin/state/centres", key: "centres" },
+    { to: "/admin/state/fraud", key: "fraudAlerts" },
+    { to: "/admin/state/analytics", key: "analytics" },
   ],
 };
 
 const GUEST_NAV = [
-  { to: "/#platform", label: "Platform" },
-  { to: "/#how-it-works", label: "How it works" },
-  { to: "/#transparency", label: "Transparency" },
-  { to: "/#news", label: "News" },
-  { to: "/#impact", label: "Impact" },
+  { to: "/#platform", key: "platform" },
+  { to: "/#how-it-works", key: "howItWorks" },
+  { to: "/#transparency", key: "transparency" },
+  { to: "/#news", key: "news" },
+  { to: "/#impact", key: "impact" },
 ];
 
 const isHashLink = (to: string) => to.includes("#");
@@ -90,11 +92,13 @@ const familyOf = (role: Role) =>
 export function Navbar() {
   const { notifications, pushToast } = useApp();
   const { user, logout, minutesLeft } = useAuth();
+  const { t } = useTranslation();
   const [notifOpen, setNotifOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const unread = notifications.filter((n) => !n.read).length;
-  const links = (user && NAV[user.role]) || GUEST_NAV;
+  const rawLinks = (user && NAV[user.role]) || GUEST_NAV;
+  const links = rawLinks.map((l) => ({ to: l.to, label: (t as (k: string) => string)(`navbar.${l.key}`) }));
   const base = user ? familyOf(user.role) : "";
   const regionLabel =
     user?.role === "state_admin"
@@ -107,7 +111,7 @@ export function Navbar() {
 
   const doLogout = () => {
     logout();
-    pushToast({ kind: "info", title: "Signed out", body: "Session cleared (simulated)." });
+    pushToast({ kind: "info", title: t("navbar.signOut"), body: "" });
     setMobileOpen(false);
     setNotifOpen(false);
     navigate("/login");
@@ -121,7 +125,7 @@ export function Navbar() {
     <header className="sticky top-0 z-40 border-b border-ink-100 bg-white/90 backdrop-blur-md">
       <div className="container-page flex h-16 items-center justify-between gap-3">
         {/* Brand */}
-        <Link to="/" className="flex items-center gap-2.5" aria-label="KrushiSetu home">
+        <Link to="/" className="flex items-center gap-2.5" aria-label={t("common.appName")}>
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-700 text-white shadow-soft">
             <Sprout className="h-5 w-5" aria-hidden />
           </span>
@@ -170,17 +174,20 @@ export function Navbar() {
           <button
             onClick={() => navigate("/search")}
             className="hidden h-10 items-center gap-2 rounded-xl border border-ink-200 bg-earth-50 px-3 text-sm text-ink-400 transition hover:border-primary-400 hover:text-ink-700 md:flex"
-            aria-label="Open natural language search"
+            aria-label={t("navbar.askAnyLanguage")}
           >
             <Search className="h-4 w-4" />
-            <span className="hidden xl:inline">Ask in any language…</span>
+            <span className="hidden xl:inline">{t("navbar.askAnyLanguage")}</span>
           </button>
+
+          {/* Context-aware language selector — part of the navbar's control cluster */}
+          <LanguageSelector />
 
           <div className="relative">
             <button
               onClick={() => setNotifOpen((v) => !v)}
               className="relative flex h-10 w-10 items-center justify-center rounded-xl text-ink-500 transition hover:bg-earth-100 hover:text-ink-900"
-              aria-label={`Notifications (${unread} unread)`}
+              aria-label={t("navbar.notifications")}
             >
               <Bell className="h-5 w-5" />
               {unread > 0 && (
@@ -203,15 +210,15 @@ export function Navbar() {
                   <span className="block max-w-28 truncate text-xs font-bold text-ink-900">{user.name}</span>
                   <span className="flex items-center gap-1 font-mono text-[9px] font-semibold text-ink-400">
                     <Timer className="h-2.5 w-2.5" aria-hidden />
-                    {minutesLeft !== null ? `${minutesLeft}m session` : "demo"}
+                    {minutesLeft !== null ? t("navbar.sessionMin", { minutes: minutesLeft }) : t("navbar.sessionDemo")}
                   </span>
                 </span>
               </span>
               <button
                 onClick={doLogout}
                 className="flex h-10 w-10 items-center justify-center rounded-xl text-ink-500 transition hover:bg-alert-50 hover:text-alert-600"
-                aria-label="Sign out"
-                title="Sign out"
+                aria-label={t("navbar.signOut")}
+                title={t("navbar.signOut")}
               >
                 <LogOut className="h-4.5 w-4.5" />
               </button>
@@ -221,14 +228,14 @@ export function Navbar() {
               to="/login"
               className="hidden h-10 items-center gap-1.5 rounded-xl bg-primary-700 px-4 text-sm font-bold text-white shadow-soft transition hover:bg-primary-800 sm:inline-flex"
             >
-              <LogIn className="h-4 w-4" aria-hidden /> Sign in
+              <LogIn className="h-4 w-4" aria-hidden /> {t("navbar.signIn")}
             </Link>
           )}
 
           <button
             onClick={() => setMobileOpen((v) => !v)}
             className="flex h-10 w-10 items-center justify-center rounded-xl text-ink-700 hover:bg-earth-100 lg:hidden"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileOpen ? t("navbar.closeMenu") : t("navbar.openMenu")}
             aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -247,7 +254,7 @@ export function Navbar() {
               }}
               className="mb-1 flex h-11 items-center gap-2 rounded-xl border border-ink-200 bg-earth-50 px-3 text-sm text-ink-500"
             >
-              <Search className="h-4 w-4" /> Ask in any language…
+              <Search className="h-4 w-4" /> {t("navbar.askAnyLanguage")}
             </button>
             {links.map((l) =>
               isHashLink(l.to) ? (
@@ -285,7 +292,7 @@ export function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className="flex h-11 items-center justify-center gap-2 rounded-xl bg-primary-700 text-sm font-bold text-white"
                 >
-                  <LogIn className="h-4 w-4" aria-hidden /> Sign in to KrushiSetu
+                  <LogIn className="h-4 w-4" aria-hidden /> {t("navbar.signInFull")}
                 </Link>
               )}
               {user ? (
@@ -298,7 +305,7 @@ export function Navbar() {
                     onClick={doLogout}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-bold text-alert-600"
                   >
-                    <LogOut className="h-3.5 w-3.5" aria-hidden /> Sign out
+                    <LogOut className="h-3.5 w-3.5" aria-hidden /> {t("navbar.signOut")}
                   </button>
                 </div>
               ) : null}

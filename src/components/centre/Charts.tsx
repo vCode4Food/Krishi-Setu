@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -81,9 +82,11 @@ export function ThroughputChart() {
 }
 
 export function CropVolumeChart() {
+  const { t } = useTranslation();
+  const localized = cropVolumes.map((d) => ({ ...d, crop: t(`crops.${d.crop}`) }));
   return (
     <ResponsiveContainer width="100%" height={220}>
-      <BarChart data={cropVolumes} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+      <BarChart data={localized} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8e4" horizontal={false} />
         <XAxis type="number" tick={{ fontSize: 11, fill: "#7d8f83" }} tickLine={false} axisLine={false} />
         <YAxis type="category" dataKey="crop" width={72} tick={{ fontSize: 12, fill: "#33473b", fontWeight: 600 }} tickLine={false} axisLine={false} />
@@ -95,12 +98,14 @@ export function CropVolumeChart() {
 }
 
 export function VerificationDonut() {
+  const { t } = useTranslation();
+  const localized = verificationData.map((d) => ({ ...d, name: t(`verification.${d.name}`) }));
   return (
     <ResponsiveContainer width="100%" height={220}>
       <PieChart>
-        <Pie data={verificationData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={86} paddingAngle={3} strokeWidth={0}>
-          {verificationData.map((d) => (
-            <Cell key={d.name} fill={d.color} />
+        <Pie data={localized} dataKey="value" nameKey="name" innerRadius={58} outerRadius={86} paddingAngle={3} strokeWidth={0}>
+          {localized.map((d) => (
+            <Cell key={d.color} fill={d.color} />
           ))}
         </Pie>
         <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`${v}%`, n]} />
@@ -123,18 +128,21 @@ export function ProcessingTimeChart() {
   );
 }
 
-export const DonutLegend = () => (
+export const DonutLegend = () => {
+  const { t } = useTranslation();
+  return (
   <ul className="mt-1 space-y-1.5 text-xs font-semibold">
     {verificationData.map((d) => (
       <li key={d.name} className="flex items-center justify-between">
         <span className="flex items-center gap-2 text-ink-700">
           <span className="h-2.5 w-2.5 rounded-full" style={{ background: d.color }} aria-hidden />
-          {d.name}
+          {t(`verification.${d.name}`)}
         </span>
         <span className="text-ink-900">{d.value}%</span>
       </li>
     ))}
   </ul>
-);
+  );
+};
 
 export const ChartColors = { GREEN, DARK, AMBER, RED, EARTH };

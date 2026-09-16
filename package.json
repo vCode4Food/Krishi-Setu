@@ -13,10 +13,12 @@
     "@fontsource-variable/inter": "^5.2.5",
     "@fontsource-variable/plus-jakarta-sans": "^5.2.5",
     "framer-motion": "^12.23.0",
+    "i18next": "^26.4.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-i18next": "^17.0.14",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.6.0",
     "recharts": "^2.15.4"

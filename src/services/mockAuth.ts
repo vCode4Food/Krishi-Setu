@@ -187,9 +187,9 @@ export const loginWithMobile = async (mobile: string) => {
   await delay(800);
   const user = findUserByMobile(mobile);
   if (!user) {
-    return { success: false, reason: "This number is not registered on the KrushiSetu demo network.", user: undefined };
+    return { success: false as const, reason: "This number is not registered on the KrushiSetu demo network.", reasonKey: "errNotRegistered" as const, user: undefined };
   }
-  return { success: true, user, otpRequired: true as const };
+  return { success: true as const, user, otpRequired: true as const };
 };
 
 export const sendOTP = async (mobile: string) => {
@@ -202,21 +202,21 @@ export const sendOTP = async (mobile: string) => {
 export const verifyOTP = async (
   mobile: string,
   code: string,
-): Promise<{ success: boolean; user?: DemoUser; session?: Session; reason?: string }> => {
+): Promise<{ success: boolean; user?: DemoUser; session?: Session; reason?: string; reasonKey?: "no_otp" | "expired" | "wrong" | "not_registered" }> => {
   await delay(650);
   const key = mobile.replace(/\D/g, "");
   const entry = otpStore.get(key);
-  if (!entry) return { success: false, reason: "No OTP was sent to this number. Request a new code." };
+  if (!entry) return { success: false, reason: "No OTP was sent to this number. Request a new code.", reasonKey: "no_otp" as const };
   if (Date.now() > entry.expiresAt) {
     otpStore.delete(key);
-    return { success: false, reason: "OTP expired. Request a new code." };
+    return { success: false, reason: "OTP expired. Request a new code.", reasonKey: "expired" as const };
   }
   if (entry.code !== code) {
-    return { success: false, reason: "Incorrect OTP. Please check the latest code and retry." };
+    return { success: false, reason: "Incorrect OTP. Please check the latest code and retry.", reasonKey: "wrong" as const };
   }
   otpStore.delete(key);
   const user = findUserByMobile(mobile);
-  if (!user) return { success: false, reason: "This number is not registered." };
+  if (!user) return { success: false, reason: "This number is not registered.", reasonKey: "not_registered" as const };
   const issuedAt = Date.now();
   return { success: true, user, session: { userId: user.id, issuedAt, expiresAt: issuedAt + SESSION_TTL_MS } };
 };

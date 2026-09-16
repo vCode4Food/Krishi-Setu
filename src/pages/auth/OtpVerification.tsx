@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Sprout, ShieldCheck, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +10,7 @@ import { cn } from "@/utils/format";
 const RESEND_SECONDS = 30;
 
 export default function OtpVerification() {
+  const { t } = useTranslation();
   const { pendingMobile, demoOtp, login, verify } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -66,7 +68,13 @@ export default function OtpVerification() {
     const res = await verify(code);
     setChecking(false);
     if (!res.ok) {
-      setError(res.reason ?? "Verification failed.");
+      const reasonMap: Record<string, string> = {
+        no_otp: t("auth.errNoOtp"),
+        expired: t("auth.errExpired"),
+        wrong: t("auth.errWrong"),
+        not_registered: t("auth.errNotRegistered"),
+      };
+      setError(reasonMap[res.reasonKey ?? ""] ?? res.reason ?? t("auth.errGeneric"));
       setDigits(Array(6).fill(""));
       inputs.current[0]?.focus();
       return;
@@ -109,17 +117,17 @@ export default function OtpVerification() {
                 >
                   <CheckCircle2 className="h-10 w-10 text-primary-600" aria-hidden />
                 </motion.span>
-                <h1 className="mt-5 font-display text-2xl font-extrabold text-ink-900">Verified!</h1>
-                <p className="mt-1 text-sm text-ink-500">Detecting your role…</p>
+                <h1 className="mt-5 font-display text-2xl font-extrabold text-ink-900">{t("auth.verified")}</h1>
+                <p className="mt-1 text-sm text-ink-500">{t("auth.detectingRole")}</p>
               </motion.div>
             ) : (
               <motion.div key="form" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                 <button onClick={() => navigate("/login")} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-primary-700 hover:text-primary-800">
-                  <ArrowLeft className="h-4 w-4" aria-hidden /> Change mobile number
+                  <ArrowLeft className="h-4 w-4" aria-hidden /> {t("auth.changeMobile")}
                 </button>
-                <h1 className="font-display text-2xl font-extrabold text-ink-900">OTP Verification</h1>
+                <h1 className="font-display text-2xl font-extrabold text-ink-900">{t("auth.otpHeading")}</h1>
                 <p className="mt-1.5 text-sm text-ink-500">
-                  Enter the 6-digit code sent to <strong className="text-ink-900">{masked}</strong>
+                  {t("auth.otpSentTo")} <strong className="text-ink-900">{masked}</strong>
                 </p>
 
                 <form onSubmit={submit} className="mt-7">
@@ -136,7 +144,7 @@ export default function OtpVerification() {
                         inputMode="numeric"
                         autoComplete={i === 0 ? "one-time-code" : "off"}
                         maxLength={6}
-                        aria-label={`OTP digit ${i + 1}`}
+                        aria-label={t("auth.otpDigit", { n: i + 1 })}
                         className={cn(
                           "h-14 w-full max-w-14 rounded-xl border-2 bg-white text-center font-display text-2xl font-extrabold outline-none transition",
                           d ? "border-primary-600 text-primary-800" : "border-ink-200 text-ink-900",
@@ -148,11 +156,11 @@ export default function OtpVerification() {
 
                   {demoOtp && (
                     <p className="mt-4 rounded-xl border border-info-500/20 bg-info-50 px-3.5 py-2.5 text-sm text-info-600">
-                      <strong>Demo OTP:</strong>{" "}
+                      <strong>{t("auth.demoOtpLabel")}</strong>{" "}
                       <button type="button" onClick={() => setDigits(demoOtp.split(""))} className="font-mono font-extrabold underline underline-offset-2">
                         {demoOtp}
                       </button>{" "}
-                      (tap to autofill — simulates the SMS)
+                      {t("auth.demoOtpHint")}
                     </p>
                   )}
 
@@ -163,27 +171,27 @@ export default function OtpVerification() {
                   )}
 
                   <Button type="submit" size="lg" className="mt-5 w-full" loading={checking} disabled={code.length !== 6} icon={<ShieldCheck className="h-5 w-5" />}>
-                    {checking ? "Verifying…" : "Verify & Continue"}
+                    {checking ? t("auth.verifying") : t("auth.verify")}
                   </Button>
                 </form>
 
                 <div className="mt-5 flex items-center justify-between text-sm">
                   {secondsLeft > 0 ? (
                     <p className="text-ink-400">
-                      Resend OTP in <span className="font-mono font-bold text-ink-700">{String(secondsLeft).padStart(2, "0")}s</span>
+                      {t("auth.resendIn")} <span className="font-mono font-bold text-ink-700">{String(secondsLeft).padStart(2, "0")}s</span>
                     </p>
                   ) : (
                     <button onClick={resend} className="font-bold text-primary-700 hover:text-primary-800">
-                      Resend OTP
+                      {t("auth.resend")}
                     </button>
                   )}
                   <button onClick={() => navigate("/login")} className="font-semibold text-ink-500 hover:text-ink-900">
-                    Change number
+                    {t("auth.changeNumber")}
                   </button>
                 </div>
 
                 <p className="mt-8 text-center text-xs leading-relaxed text-ink-400">
-                  Prototype authentication — no real SMS is sent. OTP is shown on screen for the demo.
+                  {t("auth.noSms")}
                 </p>
               </motion.div>
             )}

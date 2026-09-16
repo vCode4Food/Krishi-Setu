@@ -1,19 +1,21 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Loader2, Wheat, Truck, ClipboardList, Warehouse, Map, Flag } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { homeRouteFor } from "@/services/mockAuth";
 
-const roleMeta: Record<string, { icon: typeof Wheat; blurb: string }> = {
-  farmer: { icon: Wheat, blurb: "Opening Farmer Dashboard" },
-  truck_driver: { icon: Truck, blurb: "Opening Driver Console" },
-  procurement_officer: { icon: ClipboardList, blurb: "Opening Procurement Operations" },
-  centre_manager: { icon: Warehouse, blurb: "Opening Centre Management" },
-  district_admin: { icon: Map, blurb: "Opening District Overview" },
-  state_admin: { icon: Flag, blurb: "Opening State Overview" },
+const roleMeta: Record<string, { icon: typeof Wheat; blurbKey: string }> = {
+  farmer: { icon: Wheat, blurbKey: "auth.openFarmer" },
+  truck_driver: { icon: Truck, blurbKey: "auth.openDriver" },
+  procurement_officer: { icon: ClipboardList, blurbKey: "auth.openOfficer" },
+  centre_manager: { icon: Warehouse, blurbKey: "auth.openManager" },
+  district_admin: { icon: Map, blurbKey: "auth.openDistrict" },
+  state_admin: { icon: Flag, blurbKey: "auth.openState" },
 };
 
 export default function PostLogin() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -59,11 +61,11 @@ export default function PostLogin() {
         </span>
       </div>
       <h1 className="mt-7 font-display text-2xl font-extrabold">
-        {user ? `Welcome, ${user.name.split(" ")[0]}` : "Signing in…"}
+        {user ? t("auth.welcomeName", { name: user.name.split(" ")[0] }) : t("auth.signingIn")}
       </h1>
       <p className="mt-1.5 flex items-center justify-center gap-2 text-sm text-primary-100">
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-        {meta?.blurb ?? "Verifying session…"}
+        {meta ? t(meta.blurbKey) : t("auth.verifyingSession")}
       </p>
       {user && (
         <p className="mt-5 rounded-full bg-white/10 px-4 py-1.5 font-mono text-xs font-bold tracking-wide text-primary-100">

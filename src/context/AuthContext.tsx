@@ -27,7 +27,7 @@ interface AuthContextValue {
   demoOtp: string | null;
   otpRequestedAt: number | null;
   login: (mobile: string) => Promise<{ ok: boolean; reason?: string }>;
-  verify: (code: string) => Promise<{ ok: boolean; reason?: string }>;
+  verify: (code: string) => Promise<{ ok: boolean; reason?: string; reasonKey?: string }>;
   logout: (reason?: "user" | "expired") => void;
   resetFlow: () => void;
   hasPermission: (permission: string) => boolean;

@@ -5,6 +5,7 @@ import {
   GitBranch, Warehouse, CalendarClock, BarChart3,
 } from "lucide-react";
 import { cn } from "@/utils/format";
+import { useTranslation } from "react-i18next";
 import { Navbar } from "@/components/layout/Navbar";
 import { KrushiAI } from "@/components/chatbot/KrushiAI";
 import { Toasts } from "@/components/layout/Toasts";
@@ -13,7 +14,7 @@ import { useApp } from "@/context/AppContext";
 
 interface Item {
   to: string;
-  label: string;
+  labelKey: string;
   icon: typeof LayoutDashboard;
   end?: boolean;
 }
@@ -32,6 +33,7 @@ export function ConsoleLayout({
 }) {
   const { user } = useAuth();
   const { chatOpen } = useApp();
+  const { t } = useTranslation();
   const location = useLocation();
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export function ConsoleLayout({
                 }
               >
                 <item.icon className="h-4.5 w-4.5" aria-hidden />
-                {item.label}
+                {t(item.labelKey)}
               </NavLink>
             ))}
           </nav>
@@ -104,7 +106,7 @@ export function ConsoleLayout({
               }
             >
               <item.icon className="h-5 w-5" aria-hidden />
-              {item.label}
+              {t(item.labelKey)}
             </NavLink>
           ))}
         </div>
@@ -115,20 +117,20 @@ export function ConsoleLayout({
 }
 
 export const officerItems: Item[] = [
-  { to: "/officer", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/officer/weighing", label: "Live Weighing", icon: Scale },
-  { to: "/officer/queue", label: "Queue", icon: Truck },
-  { to: "/officer/trucks", label: "Trucks", icon: Truck },
-  { to: "/officer/verification", label: "Verification", icon: ScanBarcode },
-  { to: "/officer/transactions", label: "Transactions", icon: ReceiptText },
-  { to: "/officer/audit", label: "Audit", icon: FileClock },
+  { to: "/officer", labelKey: "navbar.dashboard", icon: LayoutDashboard, end: true },
+  { to: "/officer/weighing", labelKey: "navbar.liveWeighing", icon: Scale },
+  { to: "/officer/queue", labelKey: "navbar.queue", icon: Truck },
+  { to: "/officer/trucks", labelKey: "navbar.trucks", icon: Truck },
+  { to: "/officer/verification", labelKey: "navbar.verification", icon: ScanBarcode },
+  { to: "/officer/transactions", labelKey: "navbar.transactions", icon: ReceiptText },
+  { to: "/officer/audit", labelKey: "navbar.audit", icon: FileClock },
 ];
 
 export const managerItems: Item[] = [
-  { to: "/centre-manager", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/centre-manager/capacity", label: "Capacity", icon: Warehouse },
-  { to: "/centre-manager/lanes", label: "Lanes", icon: GitBranch },
-  { to: "/centre-manager/slots", label: "Slots", icon: CalendarClock },
-  { to: "/centre-manager/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/centre-manager/audit", label: "Audit", icon: FileClock },
+  { to: "/centre-manager", labelKey: "navbar.dashboard", icon: LayoutDashboard, end: true },
+  { to: "/centre-manager/capacity", labelKey: "navbar.capacity", icon: Warehouse },
+  { to: "/centre-manager/lanes", labelKey: "navbar.lanes", icon: GitBranch },
+  { to: "/centre-manager/slots", labelKey: "navbar.slots", icon: CalendarClock },
+  { to: "/centre-manager/analytics", labelKey: "navbar.analytics", icon: BarChart3 },
+  { to: "/centre-manager/audit", labelKey: "navbar.audit", icon: FileClock },
 ];

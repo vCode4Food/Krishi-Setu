@@ -1,36 +1,38 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Sprout, ShieldCheck } from "lucide-react";
 
 const linkGroups = [
   {
-    heading: "Platform",
+    headingKey: "platform",
     links: [
-      { label: "About", to: "/" },
-      { label: "Farmer Services", to: "/farmer" },
-      { label: "Procurement Centres", to: "/farmer/centres" },
-      { label: "Centre Dashboard", to: "/centre" },
+      { key: "about", to: "/" },
+      { key: "farmerServices", to: "/farmer" },
+      { key: "procurementCentres", to: "/farmer/centres" },
+      { key: "centreDashboard", to: "/centre" },
     ],
   },
   {
-    heading: "Grow",
+    headingKey: "grow",
     links: [
-      { label: "Schemes", to: "/farmer/schemes" },
-      { label: "News", to: "/farmer/news" },
-      { label: "Experts", to: "/farmer/experts" },
-      { label: "Crop Health", to: "/farmer/crop-health" },
+      { key: "schemes", to: "/farmer/schemes" },
+      { key: "news", to: "/farmer/news" },
+      { key: "experts", to: "/farmer/experts" },
+      { key: "cropHealth", to: "/farmer/crop-health" },
     ],
   },
   {
-    heading: "Support",
+    headingKey: "support",
     links: [
-      { label: "Help", to: "/search" },
-      { label: "Privacy", to: "/" },
-      { label: "Terms", to: "/" },
+      { key: "help", to: "/search" },
+      { key: "privacy", to: "/" },
+      { key: "terms", to: "/" },
     ],
   },
 ];
 
 export function Footer() {
+  const { t } = useTranslation();
   return (
     <footer className="border-t border-ink-100 bg-primary-900 text-white">
       <div className="container-page py-12">
@@ -41,26 +43,25 @@ export function Footer() {
                 <Sprout className="h-5 w-5 text-primary-200" aria-hidden />
               </span>
               <div>
-                <p className="font-display text-lg font-extrabold">KrushiSetu</p>
-                <p className="text-xs text-primary-200">Digital Agriculture. Transparent Procurement. Empowered Farmers.</p>
+                <p className="font-display text-lg font-extrabold">{t("common.appName")}</p>
+                <p className="text-xs text-primary-200">{t("footer.tagline")}</p>
               </div>
             </div>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-primary-100/80">
-              One connected digital platform that makes agricultural procurement smarter, faster, more
-              transparent and farmer-centric.
+              {t("footer.blurb")}
             </p>
             <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-primary-100">
-              <ShieldCheck className="h-3.5 w-3.5" aria-hidden /> Prototype build — demo data only
+              <ShieldCheck className="h-3.5 w-3.5" aria-hidden /> {t("footer.prototypeBadge")}
             </p>
           </div>
           {linkGroups.map((g) => (
-            <div key={g.heading}>
-              <h4 className="text-sm font-bold uppercase tracking-wider text-primary-200">{g.heading}</h4>
+            <div key={g.headingKey}>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-primary-200">{t(`footer.${g.headingKey}`)}</h4>
               <ul className="mt-3 space-y-2">
                 {g.links.map((l) => (
-                  <li key={l.label}>
+                  <li key={l.key}>
                     <Link to={l.to} className="text-sm text-primary-100/80 transition hover:text-white">
-                      {l.label}
+                      {t(`footer.${l.key}`)}
                     </Link>
                   </li>
                 ))}
@@ -69,7 +70,7 @@ export function Footer() {
           ))}
         </div>
         <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-white/10 pt-6 text-xs text-primary-200/70 md:flex-row md:items-center">
-          <p>© 2026 KrushiSetu · Frontend prototype for demonstration. No real transactions are processed.</p>
+          <p>{t("footer.copyright")}</p>
           <p>Farmer ID FRM-10482 · Centre CRC-NAG-01 · Operator OP-102</p>
         </div>
       </div>

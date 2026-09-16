@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { LayoutDashboard, Sprout, MapPin, CalendarPlus, User } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/utils/format";
@@ -10,15 +11,16 @@ import { Toasts } from "@/components/layout/Toasts";
 import { useApp } from "@/context/AppContext";
 
 const bottomNav = [
-  { to: "/farmer", label: "Home", icon: LayoutDashboard, end: true },
-  { to: "/farmer/centres", label: "Centres", icon: MapPin },
-  { to: "/farmer/book-slot", label: "Book", icon: CalendarPlus },
-  { to: "/farmer/crop-health", label: "Crop", icon: Sprout },
-  { to: "/farmer/profile", label: "Profile", icon: User },
+  { to: "/farmer", key: "home", icon: LayoutDashboard, end: true },
+  { to: "/farmer/centres", key: "centres", icon: MapPin },
+  { to: "/farmer/book-slot", key: "book", icon: CalendarPlus },
+  { to: "/farmer/crop-health", key: "crop", icon: Sprout },
+  { to: "/farmer/profile", key: "profile", icon: User },
 ];
 
 export function FarmerLayout() {
   const { chatOpen } = useApp();
+  const { t } = useTranslation();
   const location = useLocation();
 
   useEffect(() => {
@@ -65,7 +67,7 @@ export function FarmerLayout() {
                   >
                     <item.icon className="h-5 w-5" aria-hidden />
                   </span>
-                  {item.label}
+                  {t(`navbar.${item.key}`)}
                 </>
               )}
             </NavLink>

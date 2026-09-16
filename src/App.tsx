@@ -1,7 +1,8 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { AppProvider } from "@/context/AppContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 import { FarmerLayout } from "@/layouts/FarmerLayout";
 import { DriverLayout } from "@/layouts/DriverLayout";
 import { ConsoleLayout, officerItems, managerItems } from "@/layouts/ConsoleLayout";
@@ -72,33 +73,34 @@ import {
 } from "lucide-react";
 
 const districtItems = [
-  { to: "/admin/district", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/admin/district/centres", label: "Centres", icon: Building2 },
-  { to: "/admin/district/procurement", label: "Procurement", icon: Package },
-  { to: "/admin/district/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/admin/district/alerts", label: "Alerts", icon: ShieldAlert },
-  { to: "/admin/district/reports", label: "Reports", icon: Download },
-  { to: "/admin/district/audit", label: "Audit", icon: FileClock },
+  { to: "/admin/district", labelKey: "navbar.dashboard", icon: LayoutDashboard, end: true },
+  { to: "/admin/district/centres", labelKey: "navbar.centres", icon: Building2 },
+  { to: "/admin/district/procurement", labelKey: "navbar.procurement", icon: Package },
+  { to: "/admin/district/analytics", labelKey: "navbar.analytics", icon: BarChart3 },
+  { to: "/admin/district/alerts", labelKey: "navbar.alerts", icon: ShieldAlert },
+  { to: "/admin/district/reports", labelKey: "navbar.reports", icon: Download },
+  { to: "/admin/district/audit", labelKey: "navbar.audit", icon: FileClock },
 ];
 
 const stateItems = [
-  { to: "/admin/state", label: "Dashboard", icon: Map, end: true },
-  { to: "/admin/state/districts", label: "Districts", icon: Map },
-  { to: "/admin/state/centres", label: "Centres", icon: Building2 },
-  { to: "/admin/state/procurement", label: "Procurement", icon: Package },
-  { to: "/admin/state/fraud", label: "Fraud Alerts", icon: Flag },
-  { to: "/admin/state/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/admin/state/reports", label: "Reports", icon: Download },
-  { to: "/admin/state/audit", label: "Audit", icon: Bell },
+  { to: "/admin/state", labelKey: "navbar.dashboard", icon: Map, end: true },
+  { to: "/admin/state/districts", labelKey: "navbar.districts", icon: Map },
+  { to: "/admin/state/centres", labelKey: "navbar.centres", icon: Building2 },
+  { to: "/admin/state/procurement", labelKey: "navbar.procurement", icon: Package },
+  { to: "/admin/state/fraud", labelKey: "navbar.fraudAlerts", icon: Flag },
+  { to: "/admin/state/analytics", labelKey: "navbar.analytics", icon: BarChart3 },
+  { to: "/admin/state/reports", labelKey: "navbar.reports", icon: Download },
+  { to: "/admin/state/audit", labelKey: "navbar.audit", icon: Bell },
 ];
 
 export default function App() {
   return (
     <AuthProvider>
-      <AppProvider>
-        <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
+      <LanguageGate>
+        <AppProvider>
+          <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
               {/* Public */}
               <Route path="/" element={<Landing />} />
               <Route path="/loading" element={<Splash />} />
@@ -240,10 +242,21 @@ export default function App() {
 
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<NotFound />} />
-            </Routes>
+              </Routes>
           </Suspense>
         </BrowserRouter>
       </AppProvider>
+      </LanguageGate>
     </AuthProvider>
   );
+}
+
+/**
+ * Bridges the authenticated user's profile state into language resolution.
+ * Preference (localStorage) still wins; profile state only recommends the
+ * regional language when no explicit choice exists.
+ */
+function LanguageGate({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  return <LanguageProvider hints={{ profileState: user?.state ?? null }}>{children}</LanguageProvider>;
 }

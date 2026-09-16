@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { MessageCircle, X, Send, Languages, Sparkles } from "lucide-react";
 import { cn } from "@/utils/format";
 import { useApp } from "@/context/AppContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { chatLanguages } from "@/data/chatbot";
 import { sendChatMessage } from "@/services/mockProcurement";
 import type { ChatMessage } from "@/types";
@@ -21,15 +23,17 @@ const quickPrompts: Record<string, string[]> = {
 
 export function KrushiAI() {
   const { chatOpen, setChatOpen } = useApp();
+  const { t } = useTranslation();
+  const { language: uiLanguage } = useLanguage();
   const navigate = useNavigate();
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState(uiLanguage);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       role: "ai",
-      text: chatLanguages[0].greeting,
+      text: chatLanguages.find((l) => l.code === uiLanguage)?.greeting ?? chatLanguages[0].greeting,
       timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
@@ -38,6 +42,11 @@ export function KrushiAI() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, typing, chatOpen]);
+
+  // Follow the app's UI language when the user changes it in the navbar
+  useEffect(() => {
+    setLanguage(uiLanguage);
+  }, [uiLanguage]);
 
   // switch greeting with language
   useEffect(() => {
@@ -87,7 +96,7 @@ export function KrushiAI() {
           "fixed bottom-20 right-4 z-[70] flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-700 text-white shadow-lift transition-all hover:bg-primary-800 hover:scale-105 md:bottom-6",
           chatOpen && "scale-0 opacity-0",
         )}
-        aria-label="Open Krushi AI assistant"
+        aria-label={t("chat.launcherAria")}
       >
         <MessageCircle className="h-6 w-6" />
         <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-saffron-400 text-[10px] font-extrabold text-ink-900">
@@ -100,7 +109,7 @@ export function KrushiAI() {
         <div
           className="fixed inset-x-2 bottom-2 z-[75] flex max-h-[76vh] flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-lift animate-fade-up sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[24rem]"
           role="dialog"
-          aria-label="Krushi AI assistant"
+          aria-label={t("chat.panelAria")}
         >
           {/* Header */}
           <div className="flex items-center justify-between bg-primary-700 px-4 py-3 text-white">
@@ -110,15 +119,15 @@ export function KrushiAI() {
               </span>
               <div>
                 <p className="text-sm font-bold">Krushi AI</p>
-                <p className="text-[11px] text-primary-100">Multilingual farm assistant · demo</p>
+                <p className="text-[11px] text-primary-100">{t("chat.assistantSub")}</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <div className="relative">
                 <select
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  aria-label="Assistant language"
+                  onChange={(e) => setLanguage(e.target.value as typeof language)}
+                  aria-label={t("chat.assistantLanguage")}
                   className="appearance-none rounded-lg bg-white/10 py-1.5 pl-7 pr-2 text-xs font-semibold text-white outline-none"
                 >
                   {chatLanguages.map((l) => (
@@ -132,7 +141,7 @@ export function KrushiAI() {
               <button
                 onClick={() => setChatOpen(false)}
                 className="flex h-9 w-9 items-center justify-center rounded-xl text-white/80 hover:bg-white/10"
-                aria-label="Close chat"
+                aria-label={t("chat.closeChat")}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -216,11 +225,11 @@ export function KrushiAI() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={`Ask in ${lastLang?.label ?? "English"}…`}
-              aria-label="Message Krushi AI"
+              placeholder={t("chat.askPlaceholder", { language: lastLang?.label ?? "English" })}
+              aria-label={t("chat.messageAria")}
               className="h-11 flex-1 rounded-xl border border-ink-200 bg-earth-50 px-3.5 text-sm outline-none focus:border-primary-500 focus:bg-white"
             />
-            <Button type="submit" size="md" className="!px-3.5" disabled={!input.trim() || typing} aria-label="Send message">
+            <Button type="submit" size="md" className="!px-3.5" disabled={!input.trim() || typing} aria-label={t("chat.sendAria")}>
               <Send className="h-4.5 w-4.5" />
             </Button>
           </form>

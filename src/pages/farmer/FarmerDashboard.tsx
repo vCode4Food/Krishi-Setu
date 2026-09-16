@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ScanSearch,
   MapPin,
@@ -38,16 +39,20 @@ import { news } from "@/data/news";
 import { formatKg } from "@/utils/format";
 
 const quickActions = [
-  { label: "Analyze Crop", icon: ScanSearch, to: "/farmer/crop-health", tone: "bg-primary-50 text-primary-700" },
-  { label: "Find Centre", icon: MapPin, to: "/farmer/centres", tone: "bg-info-50 text-info-600" },
-  { label: "Book Slot", icon: CalendarPlus, to: "/farmer/book-slot", tone: "bg-saffron-100 text-saffron-600" },
-  { label: "View Schemes", icon: Award, to: "/farmer/schemes", tone: "bg-primary-100 text-primary-800" },
-  { label: "Ask Krushi AI", icon: Bot, action: "chat" as const, tone: "bg-earth-100 text-earth-700" },
-  { label: "Consult Expert", icon: Stethoscope, to: "/farmer/experts", tone: "bg-alert-50 text-alert-600" },
+  { labelKey: "qaAnalyze", icon: ScanSearch, to: "/farmer/crop-health", tone: "bg-primary-50 text-primary-700" },
+  { labelKey: "qaFindCentre", icon: MapPin, to: "/farmer/centres", tone: "bg-info-50 text-info-600" },
+  { labelKey: "qaBookSlot", icon: CalendarPlus, to: "/farmer/book-slot", tone: "bg-saffron-100 text-saffron-600" },
+  { labelKey: "qaSchemes", icon: Award, to: "/farmer/schemes", tone: "bg-primary-100 text-primary-800" },
+  { labelKey: "qaAskAI", icon: Bot, action: "chat" as const, tone: "bg-earth-100 text-earth-700" },
+  { labelKey: "qaConsult", icon: Stethoscope, to: "/farmer/experts", tone: "bg-alert-50 text-alert-600" },
 ];
+
+const greetingKeyForHour = (h: number) =>
+  h < 12 ? "dashboard.greetingMorning" : h < 17 ? "dashboard.greetingAfternoon" : "dashboard.greetingEvening";
 
 export default function FarmerDashboard() {
   const { farmer, centres, bookings, setChatOpen } = useApp();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [wait, setWait] = useState<WaitingPrediction | null>(null);
 
@@ -78,14 +83,14 @@ export default function FarmerDashboard() {
               {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
             </p>
             <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight md:text-4xl">
-              Good Morning, {farmer.name.split(" ")[0]} 👋
+              {t(greetingKeyForHour(new Date().getHours()))}, {farmer.name.split(" ")[0]} 👋
             </h1>
             <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-primary-100">
               <span className="inline-flex items-center gap-1.5">
                 <MapPin className="h-4 w-4" aria-hidden /> {farmer.location}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Sprout className="h-4 w-4" aria-hidden /> Current crop: <strong>{farmer.currentCrop}</strong>
+                <Sprout className="h-4 w-4" aria-hidden /> {t("dashboard.currentCrop")} <strong>{farmer.currentCrop}</strong>
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <CloudSun className="h-4 w-4" aria-hidden /> 29°C · Clear
@@ -94,7 +99,7 @@ export default function FarmerDashboard() {
           </div>
           <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur md:min-w-[19rem]">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-bold uppercase tracking-wider text-primary-200">Next procurement slot</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-primary-200">{t("dashboard.nextSlot")}</p>
               <BellRing className="h-4 w-4 text-saffron-300" aria-hidden />
             </div>
             {bookings.length > 0 ? (
@@ -113,7 +118,7 @@ export default function FarmerDashboard() {
               </div>
             )}
             <Link to="/farmer/book-slot" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-saffron-300 hover:text-saffron-200">
-              Manage booking <ArrowRight className="h-4 w-4" aria-hidden />
+              {t("dashboard.manageBooking")} <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </div>
         </div>
@@ -121,18 +126,18 @@ export default function FarmerDashboard() {
 
       {/* Quick actions */}
       <section className="mb-8">
-        <SectionHeading title="Quick Actions" className="!mb-4" />
+        <SectionHeading title={t("dashboard.quickActions")} className="!mb-4" />
         <div className="grid grid-cols-3 gap-3 md:grid-cols-6">
           {quickActions.map((a) => (
             <button
-              key={a.label}
+              key={a.labelKey}
               onClick={() => (a.action === "chat" ? setChatOpen(true) : navigate(a.to!))}
               className="group flex flex-col items-center gap-2 rounded-2xl border border-ink-100 bg-white p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-lift"
             >
               <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${a.tone} transition-transform group-hover:scale-110`}>
                 <a.icon className="h-5 w-5" aria-hidden />
               </span>
-              <span className="text-xs font-bold text-ink-900">{a.label}</span>
+              <span className="text-xs font-bold text-ink-900">{t(`dashboard.${a.labelKey}`)}</span>
             </button>
           ))}
         </div>
@@ -142,20 +147,19 @@ export default function FarmerDashboard() {
       <section className="mb-10 grid gap-5 lg:grid-cols-[2fr_1fr]">
         <Card className="p-5 md:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-lg font-bold text-ink-900">Procurement Overview</h2>
-            <StatusBadge tone="blue" label={`Season status: ${farmer.remainingQtyKg > 0 ? "Selling" : "Complete"}`} />
+            <h2 className="text-lg font-bold text-ink-900">{t("dashboard.overview")}</h2>
+            <StatusBadge tone="blue" label={t("dashboard.season", { status: farmer.remainingQtyKg > 0 ? t("dashboard.seasonSelling") : t("dashboard.seasonComplete") })} />
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {[
-              { label: "Registered", value: registered, icon: PackageCheck, tone: "text-primary-700" },
-              { label: "Booked", value: booked, icon: CalendarPlus, tone: "text-info-600" },
-              { label: "Procured", value: procured, icon: Truck, tone: "text-primary-600" },
-              { label: "Remaining", value: remaining, icon: Scale, tone: "text-saffron-600" },
+          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">              {[
+              { labelKey: "kpiRegistered", value: registered, icon: PackageCheck, tone: "text-primary-700" },
+              { labelKey: "kpiBooked", value: booked, icon: CalendarPlus, tone: "text-info-600" },
+              { labelKey: "kpiProcured", value: procured, icon: Truck, tone: "text-primary-600" },
+              { labelKey: "kpiRemaining", value: remaining, icon: Scale, tone: "text-saffron-600" },
             ].map((x) => (
-              <div key={x.label} className="rounded-2xl bg-earth-50 p-4">
+              <div key={x.labelKey} className="rounded-2xl bg-earth-50 p-4">
                 <x.icon className={`h-5 w-5 ${x.tone}`} aria-hidden />
                 <p className="mt-2 font-display text-xl font-extrabold text-ink-900 md:text-2xl">{formatKg(x.value)}</p>
-                <p className="text-xs font-semibold text-ink-400">{x.label}</p>
+                <p className="text-xs font-semibold text-ink-400">{t(`dashboard.${x.labelKey}`)}</p>
               </div>
             ))}
           </div>
@@ -163,19 +167,19 @@ export default function FarmerDashboard() {
             <CapacityMeter
               remaining={remaining}
               total={registered}
-              label="Your produce remaining vs registered"
+              label={t("dashboard.capacityLabel")}
               showValues={false}
             />
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
-            <Button size="sm" onClick={() => navigate("/farmer/book-slot")}>Book procurement slot</Button>
-            <Button size="sm" variant="outline" onClick={() => navigate("/farmer/transactions")}>Transaction history</Button>
+            <Button size="sm" onClick={() => navigate("/farmer/book-slot")}>{t("dashboard.btnBookSlot")}</Button>
+            <Button size="sm" variant="outline" onClick={() => navigate("/farmer/transactions")}>{t("dashboard.btnHistory")}</Button>
           </div>
         </Card>
 
         <div className="grid gap-5">
           <Card className="p-5">
-            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-ink-400">MSP Today</h3>
+            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-ink-400">{t("dashboard.mspToday")}</h3>
             <ul className="mt-3 space-y-2.5">
               {mspTicker.slice(0, 4).map((m) => (
                 <li key={m.crop} className="flex items-center justify-between text-sm">
@@ -192,12 +196,12 @@ export default function FarmerDashboard() {
           </Card>
           <Card className="p-5">
             <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-ink-400">
-              <CloudSun className="h-4 w-4" aria-hidden /> Weather — Nagpur
+              <CloudSun className="h-4 w-4" aria-hidden /> {t("dashboard.weather", { city: "Nagpur" })}
             </h3>
             <p className="mt-3 font-display text-3xl font-extrabold text-ink-900">29°C</p>
-            <p className="text-sm font-semibold text-ink-700">Mainly clear · Humidity 41%</p>
+            <p className="text-sm font-semibold text-ink-700">{t("dashboard.weatherNow")} · {t("dashboard.humidity", { n: 41 })}</p>
             <p className="mt-2 rounded-xl bg-info-50 px-3 py-2 text-xs font-semibold text-info-600">
-              Advisory: monsoon withdrawal in 72h — good harvesting window.
+              {t("dashboard.advisory")}
             </p>
           </Card>
         </div>
@@ -206,12 +210,12 @@ export default function FarmerDashboard() {
       {/* Nearby centres carousel */}
       <section className="mb-10">
         <SectionHeading
-          title="Nearby Procurement Centres"
-          subtitle="Live capacity, queue and predicted wait — updated continuously"
+          title={t("dashboard.nearbyTitle")}
+          subtitle={t("dashboard.nearbySubtitle")}
           className="!mb-4"
           action={
             <Link to="/farmer/centres" className="hidden items-center gap-1 text-sm font-bold text-primary-700 hover:text-primary-800 md:inline-flex">
-              View map <ArrowRight className="h-4 w-4" aria-hidden />
+              {t("dashboard.viewMap")} <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           }
         />
@@ -228,9 +232,9 @@ export default function FarmerDashboard() {
       <section className="mb-10 grid gap-5 lg:grid-cols-2">
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-ink-100 p-5">
-            <h2 className="text-lg font-bold text-ink-900">Latest Crop Health</h2>
+            <h2 className="text-lg font-bold text-ink-900">{t("dashboard.cropHealthTitle")}</h2>
             <Link to="/farmer/crop-health" className="text-sm font-bold text-primary-700 hover:text-primary-800">
-              Analyze again
+              {t("dashboard.analyzeAgain")}
             </Link>
           </div>
           <div className="flex items-center gap-5 p-5">
@@ -238,32 +242,32 @@ export default function FarmerDashboard() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-ink-900">Wheat</h3>
-                <StatusBadge tone="green" label="82 / 100 — Healthy" />
+                <StatusBadge tone="green" label={t("dashboard.healthyBadge", { score: 82 })} />
               </div>
-              <p className="mt-1 text-sm text-ink-500">Mild nitrogen deficiency · moderate moisture stress</p>
+              <p className="mt-1 text-sm text-ink-500">{t("dashboard.cropIssue")}</p>
               <p className="mt-1.5 text-xs font-semibold text-primary-700">
-                Recommendation: urea top-dress within 7 days
+                {t("dashboard.cropAdvice")}
               </p>
             </div>
             <ChevronRight className="h-5 w-5 shrink-0 text-ink-300" aria-hidden />
           </div>
           <div className="border-t border-ink-100 bg-earth-50 px-5 py-3 text-xs text-ink-500">
-            Analyzed {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short" })} · KrushiSetu AI v4.2 (demo)
+            {t("dashboard.analyzedOn", { date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short" }) })}
           </div>
         </Card>
 
         <Card className="p-5">
-          <h2 className="text-lg font-bold text-ink-900">Waiting-Time Prediction</h2>
+          <h2 className="text-lg font-bold text-ink-900">{t("dashboard.waitTitle")}</h2>
           <p className="mt-1 text-sm text-ink-500">{homeCentre.name}</p>
           <div className="mt-4 flex items-center gap-5">
             <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-primary-100">
               <div className="text-center">
                 <p className="font-display text-2xl font-extrabold text-primary-800">{wait?.minutes ?? "—"}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-ink-400">minutes</p>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-ink-400">{t("dashboard.minutes")}</p>
               </div>
             </div>
             <ul className="flex-1 space-y-1.5 text-xs text-ink-500">
-              {(wait?.factors ?? ["Loading prediction…"]).map((f) => (
+              {(wait?.factors ?? [t("dashboard.loadingPrediction")]).map((f) => (
                 <li key={f} className="flex items-start gap-1.5">
                   <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" aria-hidden />
                   {f}
@@ -272,7 +276,7 @@ export default function FarmerDashboard() {
             </ul>
           </div>
           {wait && (
-            <p className="mt-3 text-xs font-semibold text-primary-700">{wait.confidence}% prediction confidence</p>
+            <p className="mt-3 text-xs font-semibold text-primary-700">{t("dashboard.predictionConfidence", { n: wait.confidence })}</p>
           )}
         </Card>
       </section>
@@ -280,12 +284,12 @@ export default function FarmerDashboard() {
       {/* Schemes carousel */}
       <section className="mb-10">
         <SectionHeading
-          title="Government Schemes For You"
-          subtitle="Matched to your crop, land size and state"
+          title={t("dashboard.schemesTitle")}
+          subtitle={t("dashboard.schemesSubtitle")}
           className="!mb-4"
           action={
             <Link to="/farmer/schemes" className="hidden items-center gap-1 text-sm font-bold text-primary-700 hover:text-primary-800 md:inline-flex">
-              All schemes <ArrowRight className="h-4 w-4" aria-hidden />
+              {t("dashboard.allSchemes")} <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           }
         />
@@ -299,12 +303,12 @@ export default function FarmerDashboard() {
       {/* News carousel */}
       <section className="mb-4">
         <SectionHeading
-          title="Latest Farmer News"
-          subtitle="Procurement, weather, markets and advisories"
+          title={t("dashboard.newsTitle")}
+          subtitle={t("dashboard.newsSubtitle")}
           className="!mb-4"
           action={
             <Link to="/farmer/news" className="hidden items-center gap-1 text-sm font-bold text-primary-700 hover:text-primary-800 md:inline-flex">
-              All news <ArrowRight className="h-4 w-4" aria-hidden />
+              {t("dashboard.allNews")} <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           }
         />

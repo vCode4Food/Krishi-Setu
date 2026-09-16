@@ -39,6 +39,48 @@ number** after lookup. A **fresh 6-digit OTP is generated for every login/resend
 - The session persists across refreshes (`localStorage`, 30-min demo expiry); **Sign out** clears it.
 - Login screen has a **Demo Accounts** panel — tap an account to autofill the number.
 
+## 🌐 Context-aware multilingual UI (i18n)
+
+Built on **i18next + react-i18next** with 13 fully translated locales and English fallback
+everywhere (a missing key can never leak to users).
+
+**Language priority chain** — implemented in `src/i18n/languages.ts` →
+`resolveLanguageContext()`:
+
+1. **Explicit saved preference** (`localStorage: krushisetu.language`) — always wins
+2. **Authenticated user's profile state** (`user.state`, e.g. Maharashtra → Marathi)
+3. **App location context** (guest hooks)
+4. **Browser language** (fallback signal only)
+5. **English**
+
+The region *recommends* a language — it never forces one. A Maharashtra user sees
+English / हिन्दी / मराठी in the selector; picking हिन्दी keeps it हिन्दी even if the
+profile later changes to Gujarat (only the *recommendation* follows the state).
+States without a dedicated locale resolve to English + हिन्दी.
+
+**Selector UX** — a compact `🌐 हिन्दी ▾` control inside the navbar control cluster (also
+on the login/OTP screens), showing native names only. The contextual dropdown lists
+English + Hindi + regional (deduplicated) plus **More languages →** with all 13. Full
+keyboard/ARIA listbox behaviour, Escape/outside-click close, and the active language
+follows across pages, refreshes, logout and login.
+
+**RTL** — selecting اردو flips `<html dir="rtl">`, loads a Nastaliq-leaning font stack
+with extra line-height, and components use Tailwind `rtl:` variants + `ltr:/rtl:`
+utility classes for directional spacing.
+
+| Code | Native name | Code | Native name |
+| ---- | ----------- | ---- | ----------- |
+| `en` | English | `ml` | മലയാളം |
+| `hi` | हिन्दी | `pa` | ਪੰਜਾਬੀ |
+| `mr` | मराठी | `or` | ଓଡ଼ିଆ |
+| `bn` | বাংলা | `as` | অসমীয়া |
+| `te` | తెలుగు | `ur` | اردو (RTL) |
+| `ta` | தமிழ் | `gu` | ગુજરાતી |
+| `kn` | ಕನ್ನಡ | | |
+
+Adding a language = drop a `translation.json` in `src/i18n/locales/<code>/`, add one entry
+to `LANGUAGES` and one state mapping — no component changes.
+
 ## 🧭 The connected demo story
 
 1. **Login → OTP → role detection** routes to the right dashboard

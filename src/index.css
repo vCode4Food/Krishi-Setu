@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Plus Jakarta Sans Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  /* Inter handles Latin; the Indic fallback chain covers Devanagari, Bengali,
+     Tamil, Telugu, Kannada, Malayalam, Gurmukhi, Odia, Assamese (Bengali script)
+     and Naskh Urdu. System stacks keep the brand fonts primary. */
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, sans-serif,
+    "Noto Sans Devanagari", "Noto Sans Bengali", "Noto Sans Tamil", "Noto Sans Telugu",
+    "Noto Sans Kannada", "Noto Sans Malayalam", "Noto Sans Gurmukhi", "Noto Sans Oriya",
+    "Noto Sans Assamese", "Noto Nastaliq Urdu", sans-serif;
+  --font-display: "Plus Jakarta Sans Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif,
+    "Noto Sans Devanagari", "Noto Sans Bengali", "Noto Sans Tamil", "Noto Sans Telugu",
+    "Noto Sans Kannada", "Noto Sans Malayalam", "Noto Sans Gurmukhi", "Noto Sans Oriya",
+    "Noto Sans Assamese", "Noto Nastaliq Urdu", sans-serif;
 
   --color-primary-50: #eefaf2;
   --color-primary-100: #d5f2e0;
@@ -94,6 +103,20 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #a8b8ad;
   }
+
+  /* RTL (Urdu): flip directional spacing/icons that Tailwind's logical
+     properties don't cover. Components use rtl: variants for the rest. */
+  [dir="rtl"] .rtl-flip {
+    transform: scaleX(-1);
+  }
+  [dir="rtl"] body {
+    font-family: "Noto Nastaliq Urdu", var(--font-sans);
+  }
+}
+
+/* Urdu line-height compensation — Nastaliq needs extra vertical space. */
+[dir="rtl"] {
+  line-height: 1.9;
 }
 
 @utility container-page {

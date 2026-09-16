@@ -8,7 +8,7 @@ export interface RfidScanResult {
   state: RfidScanState;
   rfid?: string;
   truck?: Truck;
-  checks?: { label: string; ok: boolean }[];
+  checks?: { labelKey: string; ok: boolean }[];
   message?: string;
 }
 
@@ -35,9 +35,9 @@ export const identifyTruck = async (
     rfid: truck.rfid,
     truck,
     checks: [
-      { label: "Registered Truck", ok: true },
-      { label: "Farmer Linked", ok: Boolean(truck.farmerId) },
-      { label: "Booking Found", ok: Boolean(truck.bookingId) },
+      { labelKey: "weighing.checkRegistered", ok: true },
+      { labelKey: "weighing.checkFarmer", ok: Boolean(truck.farmerId) },
+      { labelKey: "weighing.checkBooking", ok: Boolean(truck.bookingId) },
     ],
   };
 };

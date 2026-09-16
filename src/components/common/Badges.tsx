@@ -10,6 +10,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { cn } from "@/utils/format";
+import { useTranslation } from "react-i18next";
 import type { CentreStatus, TransactionStatus } from "@/types";
 
 type Tone = "green" | "amber" | "red" | "gray" | "blue";
@@ -125,9 +126,12 @@ export const LaneStateBadge = ({
   return <StatusBadge tone={m.tone} label={m.label} icon={m.icon} />;
 };
 
-export const SecuredBadge = () => (
-  <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-800">
-    <Lock className="h-3.5 w-3.5" aria-hidden />
-    Audit-logged
-  </span>
-);
+export const SecuredBadge = () => {
+  const { t } = useTranslation();
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-800">
+      <Lock className="h-3.5 w-3.5" aria-hidden />
+      {t("common.auditLogged")}
+    </span>
+  );
+};
