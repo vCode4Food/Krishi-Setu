@@ -1,0 +1,66 @@
+import type { Farmer } from "@/types";
+import { images } from "./images";
+
+export const demoFarmer: Farmer = {
+  farmerId: "FRM-10482",
+  name: "Ramesh Patil",
+  location: "Nagpur, Maharashtra",
+  village: "Kamptee Road",
+  state: "Maharashtra",
+  landAcres: 6.5,
+  crops: ["Wheat", "Soybean", "Cotton"],
+  currentCrop: "Wheat",
+  registeredQtyKg: 14000,
+  bookedQtyKg: 8000,
+  procuredQtyKg: 5200,
+  remainingQtyKg: 8800,
+  phone: "+91 98220 41287",
+  avatarUrl: images.farmers.ramesh,
+  memberSince: 2021,
+  pmKisan: true,
+  rating: 4.8,
+};
+
+export const farmers: Farmer[] = [
+  demoFarmer,
+  {
+    farmerId: "FRM-10231",
+    name: "Sunita Devi",
+    location: "Nashik, Maharashtra",
+    village: "Dindori",
+    state: "Maharashtra",
+    landAcres: 3.2,
+    crops: ["Onion", "Tomato"],
+    currentCrop: "Onion",
+    registeredQtyKg: 9000,
+    bookedQtyKg: 4000,
+    procuredQtyKg: 2400,
+    remainingQtyKg: 5000,
+    phone: "+91 91234 55231",
+    avatarUrl: images.farmers.Anita,
+    memberSince: 2022,
+    pmKisan: true,
+    rating: 4.6,
+  },
+  {
+    farmerId: "FRM-10776",
+    name: "Gurpreet Singh",
+    location: "Chandigarh, Punjab",
+    village: "Kharar",
+    state: "Punjab",
+    landAcres: 11,
+    crops: ["Wheat", "Rice"],
+    currentCrop: "Wheat",
+    registeredQtyKg: 26000,
+    bookedQtyKg: 12000,
+    procuredQtyKg: 11800,
+    remainingQtyKg: 14200,
+    phone: "+91 98765 10776",
+    avatarUrl: images.farmers.sahib,
+    memberSince: 2020,
+    pmKisan: false,
+    rating: 4.9,
+  },
+];
+
+export const getFarmerById = (id: string) => farmers.find((f) => f.farmerId === id);

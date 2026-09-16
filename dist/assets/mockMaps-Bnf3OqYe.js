@@ -1,0 +1,1 @@
+const r=(t,n,a,M)=>{const h=(a-t)*Math.PI/180,o=(M-n)*Math.PI/180,s=Math.sin(h/2)**2+Math.cos(t*Math.PI/180)*Math.cos(a*Math.PI/180)*Math.sin(o/2)**2;return Math.round(12742*Math.atan2(Math.sqrt(s),Math.sqrt(1-s))*10)/10},d={lat:21.1736,lng:79.1019,label:"Kamptee Road, Nagpur"};export{d as F,r as d};
