@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider } from "@/context/AuthContext";
 import { AppProvider } from "@/context/AppContext";
 import { FarmerLayout } from "@/layouts/FarmerLayout";
@@ -97,6 +98,7 @@ export default function App() {
     <AuthProvider>
       <AppProvider>
         <BrowserRouter>
+          <Analytics />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public */}
