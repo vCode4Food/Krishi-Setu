@@ -1,4 +1,8 @@
-# 🌾 KrushiSetu — Digital Agriculture. Transparent Procurement.
+<p align="center">
+  <img src="public/krushisetu-logo.png" alt="KrushiSetu logo" width="120" />
+</p>
+
+# KrushiSetu — Digital Agriculture. Transparent Procurement.
 
 A high-fidelity **frontend prototype** of an Indian AgriTech + GovTech platform connecting
 **Farmers → Procurement Centres → Weighbridge → Transport → Government Schemes → Experts → Transparent Procurement**.
@@ -48,15 +52,15 @@ everywhere (a missing key can never leak to users).
 `resolveLanguageContext()`:
 
 1. **Explicit saved preference** (`localStorage: krushisetu.language`) — always wins
-2. **Authenticated user's profile state** (`user.state`, e.g. Maharashtra → Marathi)
-3. **App location context** (guest hooks)
-4. **Browser language** (fallback signal only)
-5. **English**
+2. **English** — the default on a first visit, with no auto-detection
 
-The region *recommends* a language — it never forces one. A Maharashtra user sees
-English / हिन्दी / मराठी in the selector; picking हिन्दी keeps it हिन्दी even if the
-profile later changes to Gujarat (only the *recommendation* follows the state).
-States without a dedicated locale resolve to English + हिन्दी.
+**English first, farmer in control** — a first-time visitor always sees English. The
+selector dropdown lists English + हिन्दी + the regional language recommended by the
+user's state (e.g. Maharashtra → मराठी), but that is only a *recommendation*: nothing
+changes the active language until the user picks one. Once picked, the choice persists
+and stays sticky — a हिन्दी choice keeps हिन्दी even if the profile later changes to
+Gujarat (only the *recommendation* follows the state). States without a dedicated
+locale recommend English + हिन्दी.
 
 **Selector UX** — a compact `🌐 हिन्दी ▾` control inside the navbar control cluster (also
 on the login/OTP screens), showing native names only. The contextual dropdown lists

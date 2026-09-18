@@ -1,0 +1,42 @@
+{
+  "name": "KrushiSetu \u2014 Digital Agriculture. Transparent Procurement.",
+  "short_name": "KrushiSetu",
+  "description": "Digital bridge between farmers and transparent procurement: AI crop health, digital weighing, RFID tracking and government schemes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#071a10",
+  "theme_color": "#1a5c38",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "government",
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

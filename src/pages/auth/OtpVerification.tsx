@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Sprout, ShieldCheck, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/common/Button";
 import { cn } from "@/utils/format";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 const RESEND_SECONDS = 30;
 
@@ -99,9 +100,7 @@ export default function OtpVerification() {
     <div className="flex min-h-screen flex-col bg-earth-50">
       <div className="container-page flex flex-1 flex-col items-center justify-center py-10">
         <Link to="/" className="mb-8 flex items-center gap-2.5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-700 text-white">
-            <Sprout className="h-5 w-5" aria-hidden />
-          </span>
+          <BrandLogo className="h-10 w-10 rounded-xl bg-white object-cover p-1 shadow-soft ring-1 ring-primary-100" />
           <span className="font-display text-xl font-extrabold text-ink-900">KrushiSetu</span>
         </Link>
 

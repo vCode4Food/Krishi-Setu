@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Sprout, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 const linkGroups = [
   {
@@ -39,9 +40,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-                <Sprout className="h-5 w-5 text-primary-200" aria-hidden />
-              </span>
+              <BrandLogo className="h-10 w-10 rounded-xl bg-white object-cover p-1 shadow-lift" />
               <div>
                 <p className="font-display text-lg font-extrabold">{t("common.appName")}</p>
                 <p className="text-xs text-primary-200">{t("footer.tagline")}</p>

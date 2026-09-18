@@ -6,7 +6,6 @@ import {
   Scale,
   MapPin,
   ShieldCheck,
-  Sprout,
   Bot,
   Award,
   Newspaper,
@@ -25,6 +24,7 @@ import {
   Building2,
   TrendingUp,
 } from "lucide-react";
+import { BrandLogo } from "@/components/common/BrandLogo";
 import { images } from "@/data/images";
 import { mspTicker, news } from "@/data/news";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -433,7 +433,7 @@ export default function Landing() {
         <div className="relative overflow-hidden rounded-3xl bg-primary-800 px-6 py-14 text-center text-white md:py-20">
           <img src={images.patterns.weave} alt="" className="absolute inset-0 h-full w-full object-cover opacity-10" aria-hidden />
           <div className="relative mx-auto max-w-2xl">
-            <Sprout className="mx-auto h-10 w-10 text-saffron-300" aria-hidden />
+            <BrandLogo className="mx-auto h-16 w-16 rounded-2xl bg-white/95 object-contain p-1 shadow-lift" />
             <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight md:text-4xl">
               {t("landing.ctaHeading")}
             </h2>

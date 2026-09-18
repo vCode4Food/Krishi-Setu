@@ -140,8 +140,16 @@ export const demoUsers: DemoUser[] = [
   }),
 ];
 
-export const findUserByMobile = (mobile: string): DemoUser | undefined =>
-  demoUsers.find((usr) => usr.mobile === mobile.replace(/\D/g, ""));
+/**
+ * Match a mobile number against the demo directory.
+ * Tolerates paste-with-country-code ("+91 98765 43210" → 12 digits starting
+ * with 91) as well as spaces/dashes; bare 10-digit input is the primary path.
+ */
+export const findUserByMobile = (mobile: string): DemoUser | undefined => {
+  const digits = mobile.replace(/\D/g, "");
+  const normalized = digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
+  return demoUsers.find((usr) => usr.mobile === normalized);
+};
 
 export const getPermissions = (role: Role): string[] => PERMISSIONS[role] ?? [];
 

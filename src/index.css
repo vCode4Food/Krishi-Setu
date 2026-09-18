@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Deterministic content detection: scan all TS/TSX sources explicitly so
+   utility generation doesn't depend on automatic source discovery. */
+@source "./**/*.{ts,tsx}";
+
 @theme {
   /* Inter handles Latin; the Indic fallback chain covers Devanagari, Bengali,
      Tamil, Telugu, Kannada, Malayalam, Gurmukhi, Odia, Assamese (Bengali script)
@@ -173,4 +177,55 @@
 
 @utility pulse-marker {
   animation: pulse-ring 1.8s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+}
+
+/* ── 404 page motion ──────────────────────────────────────────────────
+   Continuous loops for the NotFound numeral + illustration. Entrance
+   transitions are handled by framer-motion; these loops are disabled
+   entirely under prefers-reduced-motion. */
+@keyframes float-breathe {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+  50% { transform: translateY(-9px) scale(1.02); opacity: 0.96; }
+}
+@keyframes needle-sway {
+  0%, 100% { transform: rotate(-14deg); }
+  50% { transform: rotate(14deg); }
+}
+@keyframes sprout-sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(5deg); }
+}
+@keyframes dash-drift {
+  to { stroke-dashoffset: -28; }
+}
+@keyframes leaf-drift {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  15% { opacity: 0.85; }
+  80% { opacity: 0.5; }
+  100% { transform: translate(26px, -34px) rotate(42deg); opacity: 0; }
+}
+
+/* Numeral: one-shot fade-up entrance, then the gentle float takes over. */
+.ks-404-in {
+  animation:
+    fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both,
+    float-breathe 6s ease-in-out 0.7s infinite;
+}
+.ks-needle,
+.ks-sprout,
+.ks-pulse {
+  transform-box: fill-box;
+}
+.ks-needle { transform-origin: center; animation: needle-sway 7s ease-in-out infinite; }
+.ks-sprout { transform-origin: center bottom; animation: sprout-sway 6s ease-in-out infinite; }
+.ks-pulse { transform-origin: center; animation: pulse-ring 2.6s cubic-bezier(0.2, 0.6, 0.4, 1) infinite; }
+.ks-dash {
+  stroke-dasharray: 5 9;
+  animation: dash-drift 2.4s linear infinite;
+}
+.ks-leaf { animation: leaf-drift 10s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ks-404-in { animation: fade-up 0.01s both; }
+  .ks-needle, .ks-sprout, .ks-pulse, .ks-dash, .ks-leaf { animation: none; }
 }

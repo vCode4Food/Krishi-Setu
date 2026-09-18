@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  Sprout,
   Phone,
   ShieldCheck,
   ArrowRight,
@@ -16,6 +15,7 @@ import { demoUsers } from "@/services/mockAuth";
 import { Button } from "@/components/common/Button";
 import { StatusBadge } from "@/components/common/Badges";
 import { LanguageSelector } from "@/components/layout/LanguageSelector";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -70,9 +70,7 @@ export default function Login() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary-950/90 via-primary-900/70 to-primary-800/40" />
         <div className="relative flex h-full flex-col justify-between p-10">
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-              <Sprout className="h-5 w-5 text-primary-200" aria-hidden />
-            </span>
+            <BrandLogo className="h-10 w-10 rounded-xl bg-white/95 object-cover p-1 shadow-lift" />
             <span className="font-display text-xl font-extrabold">KrushiSetu</span>
           </Link>
           <div>
@@ -104,9 +102,7 @@ export default function Login() {
             <LanguageSelector compact />
           </div>
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-700 text-white">
-              <Sprout className="h-5 w-5" aria-hidden />
-            </span>
+            <BrandLogo className="h-10 w-10 rounded-xl bg-white object-cover p-1 shadow-soft ring-1 ring-primary-100" />
             <span className="font-display text-xl font-extrabold text-ink-900">KrushiSetu</span>
           </div>
 

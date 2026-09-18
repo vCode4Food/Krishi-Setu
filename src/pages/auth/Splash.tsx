@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Sprout, Wheat, Warehouse, Scale, IndianRupee, Radar } from "lucide-react";
+import { Leaf, Wheat, Warehouse, Scale, IndianRupee, Radar } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { homeRouteFor } from "@/services/mockAuth";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 const pipeline = [
   { icon: Wheat, key: "pipelineFarmer" },
-  { icon: Sprout, key: "pipelineCrop" },
+  { icon: Leaf, key: "pipelineCrop" },
   { icon: Warehouse, key: "pipelineCentre" },
   { icon: Scale, key: "pipelineWeigh" },
   { icon: IndianRupee, key: "pipelineProcure" },
@@ -28,11 +29,27 @@ export default function Splash() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [msgIdx, setMsgIdx] = useState(0);
+  // Two-phase progress: crawl toward 85% while the session restores, then
+  // finish to 100% once auth state is known — slow first loads feel alive
+  // instead of stuck, and the bar never sits at 0.
+  const [progress, setProgress] = useState(6);
 
   useEffect(() => {
     const t = setInterval(() => setMsgIdx((i) => (i + 1) % messages.length), 420);
     return () => clearInterval(t);
   }, []);
+
+  useEffect(() => {
+    const ready = status !== "loading";
+    const t = setInterval(() => {
+      setProgress((p) => {
+        const target = ready ? 100 : 85;
+        const step = ready ? (100 - p) * 0.28 + 1.5 : (85 - p) * 0.05 + 0.35;
+        return Math.min(target, p + step);
+      });
+    }, 70);
+    return () => clearInterval(t);
+  }, [status]);
 
   useEffect(() => {
     if (status === "loading") return; // still restoring session
@@ -58,9 +75,7 @@ export default function Splash() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative"
       >
-        <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-primary-800 shadow-lift ring-1 ring-white/10">
-          <Sprout className="h-10 w-10 text-primary-200" aria-hidden />
-        </span>
+        <BrandLogo className="mx-auto h-20 w-20 rounded-3xl bg-white object-contain p-1.5 shadow-lift ring-1 ring-white/20" />
       </motion.div>
 
       <motion.h1
@@ -111,12 +126,17 @@ export default function Splash() {
         </motion.p>
       </div>
 
-      <div className="mt-4 h-1 w-44 overflow-hidden rounded-full bg-white/10">
-        <motion.div
-          className="h-full rounded-full bg-saffron-400"
-          initial={{ width: "8%" }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 1.45, ease: "easeInOut" }}
+      <div
+        className="mt-4 h-1 w-44 overflow-hidden rounded-full bg-white/10"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(progress)}
+        aria-label={t("splash.loadingAria")}
+      >
+        <div
+          className="h-full rounded-full bg-saffron-400 transition-[width] duration-150 ease-out"
+          style={{ width: `${progress}%` }}
         />
       </div>
 

@@ -9,6 +9,7 @@ import { ConsoleLayout, officerItems, managerItems } from "@/layouts/ConsoleLayo
 import { RoleRoute, PermissionRoute } from "@/components/layout/RouteGuard";
 import Splash from "@/pages/auth/Splash";
 import { PageLoader } from "@/components/common/PageLoader";
+import { SessionWatch } from "@/components/common/SessionWatch";
 
 const Landing = lazy(() => import("@/pages/public/Landing"));
 const SearchPage = lazy(() => import("@/pages/public/NaturalLanguageSearch"));
@@ -16,6 +17,7 @@ const Login = lazy(() => import("@/pages/auth/Login"));
 const OtpVerification = lazy(() => import("@/pages/auth/OtpVerification"));
 const PostLogin = lazy(() => import("@/pages/auth/PostLogin"));
 const Unauthorized = lazy(() => import("@/pages/auth/Unauthorized"));
+const SessionExpired = lazy(() => import("@/pages/auth/SessionExpired"));
 const NotFound = lazy(() => import("@/pages/auth/NotFound"));
 
 const FarmerDashboard = lazy(() => import("@/pages/farmer/FarmerDashboard"));
@@ -98,6 +100,7 @@ export default function App() {
     <AuthProvider>
       <LanguageGate>
         <AppProvider>
+          <SessionWatch />
           <BrowserRouter>
             <Suspense fallback={<PageLoader />}>
               <Routes>
@@ -109,6 +112,7 @@ export default function App() {
               <Route path="/otp-verification" element={<OtpVerification />} />
               <Route path="/post-login" element={<PostLogin />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
+              <Route path="/session-expired" element={<SessionExpired />} />
 
               {/* Farmer experience (role: farmer) */}
               <Route element={<RoleRoute family="farmer" />}>

@@ -1,12 +1,13 @@
 /**
- * KrushiSetu language catalogue + context-aware resolution.
+ * KrushiSetu language catalogue + language resolution.
  *
  * Priority chain (see README §i18n):
  *   1. explicit saved user preference (localStorage, namespaced)
- *   2. authenticated user's profile state  → regional language
- *   3. existing application location context
- *   4. browser language (fallback signal only)
- *   5. English
+ *   2. English
+ *
+ * The first visit is always English. The user's state only *recommends* a
+ * regional language inside the selector dropdown (English + हिन्दी + regional);
+ * it never changes the active language on its own.
  */
 
 export const LANGUAGES = [
@@ -78,16 +79,6 @@ export const regionalLanguageForState = (state?: string | null): LanguageCode | 
   return hit ?? null;
 };
 
-/** Map a BCP-47 browser tag ("hi-IN", "en-GB") to a supported code. */
-export const browserLanguage = (): LanguageCode | null => {
-  if (typeof navigator === "undefined") return null;
-  for (const tag of navigator.languages ?? [navigator.language]) {
-    const base = tag?.split("-")[0]?.toLowerCase();
-    if (isSupportedLanguage(base)) return base;
-  }
-  return null;
-};
-
 /**
  * Contextual selector list: English + Hindi + regional, deduplicated.
  * regional = hi  →  [English, हिन्दी]
@@ -127,11 +118,14 @@ export const saveLanguagePreference = (code: LanguageCode) => {
 /* Resolver                                                            */
 /* ------------------------------------------------------------------ */
 
+/** Where the active language came from. */
+export type LanguageSource = "preference" | "default";
+
 export interface LanguageContext {
   /** Language i18n is rendering in right now. */
   active: LanguageCode;
   /** Where the initial active language came from. */
-  source: "preference" | "profile-state" | "location" | "browser" | "default";
+  source: LanguageSource;
   /** User's explicit choice — sticky across location changes. */
   preference: LanguageCode | null;
   /** Regional language suggested by the current location context. */
@@ -151,8 +145,9 @@ export interface LocationHints {
 
 /**
  * Pure resolver — no React, easy to unit-test.
- * `preference` always wins. Without one, the location context decides;
- * only then browser language; finally English.
+ * The active language is the explicit user preference, or English on a first
+ * visit. Location state only feeds the *recommended* regional language shown
+ * in the selector dropdown — it never sets the active language.
  */
 export const resolveLanguageContext = (
   preference: LanguageCode | null,
@@ -164,27 +159,17 @@ export const resolveLanguageContext = (
   const regional = profileRegional ?? appRegional;
   const regionalState = profileRegional ? (hints.profileState ?? null) : appRegional ? (hints.appState ?? null) : null;
 
-  let active: LanguageCode = "en";
-  let source: LanguageContext["source"] = "default";
+  // Guard against corrupted/unsupported stored values (removed locales, manual
+  // edits): anything the catalogue doesn't know is treated as no preference.
+  const validPreference = isSupportedLanguage(preference) ? preference : null;
 
-  if (preference) {
-    active = preference;
-    source = "preference";
-  } else if (regional) {
-    active = regional;
-    source = profileRegional ? "profile-state" : "location";
-  } else {
-    const browser = browserLanguage();
-    if (browser) {
-      active = browser;
-      source = "browser";
-    }
-  }
+  const active: LanguageCode = validPreference ?? "en";
+  const source: LanguageSource = validPreference ? "preference" : "default";
 
   return {
     active,
     source,
-    preference,
+    preference: validPreference,
     regional,
     regionalState,
     contextual: contextualLanguageList(regional),

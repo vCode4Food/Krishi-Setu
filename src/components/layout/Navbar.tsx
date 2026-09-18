@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  Sprout,
   Bell,
   Search,
   Menu,
@@ -12,6 +11,7 @@ import {
   LogIn,
   Timer,
 } from "lucide-react";
+import { BrandLogo } from "@/components/common/BrandLogo";
 import { cn } from "@/utils/format";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
@@ -126,9 +126,7 @@ export function Navbar() {
       <div className="container-page flex h-16 items-center justify-between gap-3">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-2.5" aria-label={t("common.appName")}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-700 text-white shadow-soft">
-            <Sprout className="h-5 w-5" aria-hidden />
-          </span>
+          <BrandLogo className="h-9 w-9 rounded-xl bg-white object-cover p-0.5 shadow-soft ring-1 ring-primary-100" />
           <span className="leading-tight">
             <span className="block font-display text-lg font-extrabold tracking-tight text-ink-900">
               KrushiSetu

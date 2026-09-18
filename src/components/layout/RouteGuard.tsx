@@ -23,6 +23,11 @@ export function RoleRoute({ family }: { family: "farmer" | "driver" | "officer" 
   }, [allowed, family, setMode]);
 
   if (status === "loading") return null;
+  // Session ran out while the user was inside a protected area — send them to
+  // the dedicated expired screen (not the generic login) with return context.
+  if (status === "expired") {
+    return <Navigate to="/session-expired" state={{ from: location.pathname }} replace />;
+  }
   if (status !== "in" || !user) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }

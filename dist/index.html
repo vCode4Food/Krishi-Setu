@@ -2,7 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
@@ -10,10 +15,102 @@
     />
     <meta name="theme-color" content="#1a5c38" />
     <title>KrushiSetu — Digital Agriculture. Transparent Procurement.</title>
-    <script type="module" crossorigin src="/assets/index-D_oxaj17.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-B8t3h7Lr.css">
+    <style>
+      /* Boot shell: brand + progress bar before React mounts (zero-JS window). */
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        background: #071a10;
+        transition: opacity 0.3s ease;
+      }
+      #boot.boot-hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #boot img {
+        box-sizing: border-box;
+        width: 80px;
+        height: 80px;
+        padding: 6px;
+        border-radius: 24px;
+        background: #ffffff;
+        box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.45);
+      }
+      .boot-bar {
+        width: 176px;
+        height: 4px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+      }
+      .boot-bar span {
+        display: block;
+        height: 100%;
+        width: 40%;
+        border-radius: 9999px;
+        background: #fbbf45;
+        animation: boot-crawl 1.4s ease-in-out infinite alternate;
+      }
+      @keyframes boot-crawl {
+        from {
+          margin-left: -40%;
+        }
+        to {
+          margin-left: 100%;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-bar span {
+          animation: none;
+          margin-left: 30%;
+        }
+        #boot {
+          transition: none;
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-CBvMNbWB.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CylpPQ1k.css">
   </head>
   <body>
     <div id="root"></div>
+    <div id="boot" aria-hidden="true">
+      <img src="/krushisetu-logo.png" alt="" width="80" height="80" />
+      <div class="boot-bar"><span></span></div>
+    </div>
+    <noscript>
+      <p style="position:fixed;inset:0;display:grid;place-items:center;background:#071a10;color:#d5f2e0;font-family:sans-serif">
+        KrushiSetu needs JavaScript to run. Please enable it and reload.
+      </p>
+    </noscript>
+    <script>
+      // Fade the boot shell out once React commits (or after 3.5s safety).
+      (function () {
+        var boot = document.getElementById("boot");
+        var done = false;
+        var hide = function () {
+          if (done || !boot) return;
+          done = true;
+          boot.classList.add("boot-hide");
+          setTimeout(function () {
+            boot.remove();
+          }, 350);
+        };
+        new MutationObserver(function () {
+          if (document.getElementById("root")?.childElementCount > 0) {
+            this.disconnect();
+            // Let the first frame paint before handing over.
+            requestAnimationFrame(hide);
+          }
+        }).observe(document.getElementById("root"), { childList: true });
+        setTimeout(hide, 3500);
+      })();
+    </script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import { browserLanguage, dirFor, isSupportedLanguage, savedLanguagePreference } from "./languages";
+import { dirFor, savedLanguagePreference } from "./languages";
 
 import en from "./locales/en/translation.json";
 import hi from "./locales/hi/translation.json";
@@ -32,13 +32,8 @@ export const resources = {
   ur: { translation: ur },
 } as const;
 
-/** Initial language honouring the same priority chain as the resolver. */
-export const initialLanguage = (): string => {
-  const pref = savedLanguagePreference();
-  if (pref) return pref;
-  const browser = browserLanguage();
-  return isSupportedLanguage(browser) ? browser : "en";
-};
+/** Boot language: the saved explicit preference, otherwise English. */
+export const initialLanguage = (): string => savedLanguagePreference() ?? "en";
 
 void i18n.use(initReactI18next).init({
   resources,

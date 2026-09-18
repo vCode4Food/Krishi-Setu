@@ -15,6 +15,7 @@ import {
   persistSession,
   getCurrentUser,
   getCurrentSession,
+  SESSION_TTL_MS,
 } from "@/services/mockAuth";
 
 export type AuthStatus = "loading" | "out" | "otp-sent" | "in" | "expired";
@@ -29,6 +30,8 @@ interface AuthContextValue {
   login: (mobile: string) => Promise<{ ok: boolean; reason?: string }>;
   verify: (code: string) => Promise<{ ok: boolean; reason?: string; reasonKey?: string }>;
   logout: (reason?: "user" | "expired") => void;
+  /** Extend the live session by a full TTL ("Stay signed in" action). */
+  renewSession: () => void;
   resetFlow: () => void;
   hasPermission: (permission: string) => boolean;
   minutesLeft: number | null;
@@ -91,6 +94,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus(reason === "expired" ? "expired" : "out");
   }, []);
 
+  const renewSession = useCallback(() => {
+    setSession((s) => {
+      if (!s) return s;
+      const renewed: Session = {
+        ...s,
+        issuedAt: Date.now(),
+        expiresAt: Date.now() + SESSION_TTL_MS,
+      };
+      // Re-persist so a reload keeps the renewed expiry.
+      if (user) persistSession(user, renewed);
+      return renewed;
+    });
+  }, [user]);
+
   const resetFlow = useCallback(() => {
     setStatus(user ? "in" : "out");
     setPendingMobile(null);
@@ -123,9 +140,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       status, user, session, pendingMobile, demoOtp, otpRequestedAt,
-      login, verify, logout, resetFlow, hasPermission, minutesLeft,
+      login, verify, logout, renewSession, resetFlow, hasPermission, minutesLeft,
     }),
-    [status, user, session, pendingMobile, demoOtp, otpRequestedAt, login, verify, logout, resetFlow, hasPermission, minutesLeft],
+    [status, user, session, pendingMobile, demoOtp, otpRequestedAt, login, verify, logout, renewSession, resetFlow, hasPermission, minutesLeft],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

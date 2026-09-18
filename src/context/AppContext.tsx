@@ -25,6 +25,11 @@ export interface Toast {
   kind: "success" | "error" | "info" | "warning";
   title: string;
   body?: string;
+  /** Optional primary action rendered inline (e.g. "Stay signed in"). */
+  actionLabel?: string;
+  onAction?: () => void;
+  /** Auto-dismiss after this many ms; defaults to 5200. Pass 0 to pin until dismissed. */
+  durationMs?: number;
 }
 
 interface AppContextValue {
@@ -74,7 +79,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (t: Omit<Toast, "id">) => {
       const id = toastSeq++;
       setToasts((prev) => [...prev, { ...t, id }]);
-      setTimeout(() => dismissToast(id), 5200);
+      const ms = t.durationMs ?? 5200;
+      if (ms > 0) setTimeout(() => dismissToast(id), ms);
+      return id;
     },
     [dismissToast],
   );

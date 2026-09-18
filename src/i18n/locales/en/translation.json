@@ -225,7 +225,8 @@
     "msg3": "Loading procurement centres…",
     "msg4": "Syncing live availability…",
     "msg5": "Ready to connect…",
-    "prototypeDemo": "Prototype Demo"
+    "prototypeDemo": "Prototype Demo",
+    "loadingAria": "Loading KrushiSetu"
   },
   "notFound": {
     "heading": "Looks like this path took a wrong turn",
@@ -657,5 +658,25 @@
     "Verified": "Verified",
     "Warning": "Warning",
     "Manual Review": "Manual Review"
+  },
+  "district": {
+    "kpiCentres": "Centres",
+    "kpiFarmers": "Farmers",
+    "kpiVolume": "Total Procurement (t)",
+    "queue": "Queue",
+    "wait": "Wait"
+  },
+  "sessionExpired": {
+    "heading": "Your session has expired",
+    "body": "For your security, KrushiSetu signs you out after 30 minutes of inactivity. Sign in again to return to your dashboard.",
+    "reason": "For your security",
+    "signIn": "Sign in again",
+    "goHome": "Go to home",
+    "brandLine": "KrushiSetu · Secure by design"
+  },
+  "sessionWarning": {
+    "title": "Signing out in {{minutes}} min",
+    "body": "You've been inactive. Stay signed in to keep working, or you'll return to the sign-in screen.",
+    "stay": "Stay signed in"
   }
 }

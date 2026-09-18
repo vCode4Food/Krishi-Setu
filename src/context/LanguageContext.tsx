@@ -26,7 +26,7 @@ interface LanguageContextValue {
   /** Active UI language code (synced with i18next). */
   language: LanguageCode;
   /** Where the active language was resolved from. */
-  source: "preference" | "profile-state" | "location" | "browser" | "default";
+  source: "preference" | "default";
   /** Explicit user selection, or null if following the region. */
   preference: LanguageCode | null;
   /** Regional language recommended by the current location context. */
